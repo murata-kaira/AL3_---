@@ -3,8 +3,6 @@
 using namespace KamataEngine;
 
 
-GameScene::~GameScene() { delete model_, delete player_; }
-
 void GameScene::Initialize() {
 	textureHandle_ = TextureManager::Load("mario.png");
 
@@ -32,7 +30,6 @@ DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 Model::PreDraw(dxCommon->GetCommandList());
 player_->Draw();
-
 
 Model::PostDraw();
 
