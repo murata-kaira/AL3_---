@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include"KamataEngine.h"
 #include"GameScene.h"
+#include "MyMath.h"
 
 using namespace KamataEngine;
 
