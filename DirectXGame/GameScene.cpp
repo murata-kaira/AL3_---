@@ -7,6 +7,9 @@ GameScene::~GameScene() {
 	delete modelBlock_;
 	delete player_;
 	delete debugCamera_;
+	delete modelSkydome_;
+	delete skydome_;
+	delete modelPlayer_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -18,17 +21,23 @@ GameScene::~GameScene() {
 
 void GameScene::Initialize() {
 
-	textureHandle_ = TextureManager::Load("cube.jpg");
+	modelBlock_ = Model::CreateFromOBJ("block",true);
 
-	modelBlock_ = Model::Create();
+	modelPlayer_ = Model::CreateFromOBJ("player", true);
+
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
 	worldTransform_.Initialize();
 
 	camera_.Initialize();
 
-	player_ = new Player();
 	debugCamera_ = new DebugCamera(1280, 720);
-	player_->Initialize(modelBlock_, textureHandle_, &camera_);
+
+	player_ = new Player();
+	player_->Initialize(modelPlayer_, &camera_);
+
+	skydome_ = new Skydome();
+	skydome_->Initialize(modelSkydome_, &camera_);
 
 	const uint32_t KNumBlockVirtical = 10;
 	const uint32_t KNumBlockHorizontal = 20;
@@ -58,6 +67,7 @@ void GameScene::Update() {
 
 	player_->Update();
 	debugCamera_->Update();
+
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_0)) {
@@ -93,13 +103,16 @@ void GameScene::Draw() {
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 	Model::PreDraw(dxCommon->GetCommandList());
-	// player_->Draw();
+	
+	player_->Draw();
+
+	skydome_->Draw();
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
 				continue;
-			modelBlock_->Draw(*worldTransformBlock, camera_, textureHandle_);
+			modelBlock_->Draw(*worldTransformBlock, camera_);
 		}
 	}
 	Model::PostDraw();
