@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "Skydome.h"
 #include <vector>
+#include "MapChipField.h"
 
 class GameScene {
 
@@ -26,6 +27,8 @@ class GameScene {
 
 	Skydome* skydome_ = nullptr;
 
+	MapChipField* mapChipField_;
+
 public:
 	~GameScene();
 
@@ -34,4 +37,7 @@ public:
 	void Update();
 
 	void Draw();
+
+	void GenerateBlocks();
+
 };

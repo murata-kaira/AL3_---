@@ -1,6 +1,6 @@
 #include "GameScene.h"
 #include "MyMath.h"
-
+ 
 using namespace KamataEngine;
 // デストラクト
 GameScene::~GameScene() {
@@ -10,6 +10,7 @@ GameScene::~GameScene() {
 	delete modelSkydome_;
 	delete skydome_;
 	delete modelPlayer_;
+	delete mapChipField_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -21,7 +22,7 @@ GameScene::~GameScene() {
 
 void GameScene::Initialize() {
 
-	modelBlock_ = Model::CreateFromOBJ("block",true);
+	modelBlock_ = Model::CreateFromOBJ("block", true);
 
 	modelPlayer_ = Model::CreateFromOBJ("player", true);
 
@@ -39,28 +40,10 @@ void GameScene::Initialize() {
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
 
-	const uint32_t KNumBlockVirtical = 10;
-	const uint32_t KNumBlockHorizontal = 20;
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
-	const float kBlockWidth = 2.0f;
-	const float kBlockHeight = 2.0f;
-
-	worldTransformBlocks_.resize(KNumBlockVirtical);
-
-	for (uint32_t i = 0; i < KNumBlockVirtical; ++i) {
-		worldTransformBlocks_[i].resize(KNumBlockHorizontal);
-	}
-
-	for (uint32_t i = 0; i < KNumBlockVirtical; ++i) {
-		for (uint32_t j = 0; j < KNumBlockHorizontal; ++j) {
-			if ((i + j) % 2 == 0)
-				continue;
-			worldTransformBlocks_[i][j] = new WorldTransform();
-			worldTransformBlocks_[i][j]->Initialize();
-			worldTransformBlocks_[i][j]->translation_.x = kBlockWidth * j;
-			worldTransformBlocks_[i][j]->translation_.y = kBlockHeight * i;
-		}
-	}
+	GenerateBlocks();
 }
 
 void GameScene::Update() {
@@ -116,4 +99,28 @@ void GameScene::Draw() {
 		}
 	}
 	Model::PostDraw();
+}
+
+void GameScene::GenerateBlocks() {
+
+	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
+	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
+
+	worldTransformBlocks_.resize(numBlockVirtical);
+
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		worldTransformBlocks_[i].resize(numBlockHorizontal);
+	}
+
+	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
+		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
+			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformBlocks_[i][j] = worldTransform;
+				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+			}
+		}
+	}
 }
