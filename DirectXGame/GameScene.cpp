@@ -1,6 +1,6 @@
 #include "GameScene.h"
 #include "MyMath.h"
- 
+
 using namespace KamataEngine;
 // デストラクト
 GameScene::~GameScene() {
@@ -28,20 +28,23 @@ void GameScene::Initialize() {
 
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
-	worldTransform_.Initialize();
-
-	camera_.Initialize();
-
 	debugCamera_ = new DebugCamera(1280, 720);
 
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
+
 	player_ = new Player();
-	player_->Initialize(modelPlayer_, &camera_);
+
+	player_->Initialize(modelPlayer_, &camera_,playerPosition);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
 
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+
+	worldTransform_.Initialize();
+
+	camera_.Initialize();
 
 	GenerateBlocks();
 }
@@ -50,7 +53,6 @@ void GameScene::Update() {
 
 	player_->Update();
 	debugCamera_->Update();
-
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_0)) {
@@ -66,8 +68,6 @@ void GameScene::Update() {
 	} else {
 		camera_.UpdateMatrix();
 	}
-
-	
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -86,7 +86,7 @@ void GameScene::Draw() {
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
 	Model::PreDraw(dxCommon->GetCommandList());
-	
+
 	player_->Draw();
 
 	skydome_->Draw();
