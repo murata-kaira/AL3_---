@@ -4,6 +4,8 @@
 #include "Skydome.h"
 #include <vector>
 #include "MapChipField.h"
+#include"CameraController.h"
+
 
 class GameScene {
 
@@ -28,6 +30,9 @@ class GameScene {
 	Skydome* skydome_ = nullptr;
 
 	MapChipField* mapChipField_;
+
+	CameraController* cameraController_;
+
 
 public:
 	~GameScene();

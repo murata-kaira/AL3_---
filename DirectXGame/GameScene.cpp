@@ -42,6 +42,14 @@ void GameScene::Initialize() {
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
+	cameraController_ = new CameraController();
+	cameraController_->Initialize();
+	cameraController_->SetTarget(player_);
+	cameraController_->Reset();
+
+	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
+	cameraController_->SetMovableArea(cameraArea);
+
 	worldTransform_.Initialize();
 
 	camera_.Initialize();
@@ -53,6 +61,7 @@ void GameScene::Update() {
 
 	player_->Update();
 	debugCamera_->Update();
+	cameraController_->Update();
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_0)) {
@@ -66,7 +75,9 @@ void GameScene::Update() {
 		camera_.matProjection = debugCamera_->GetCamera().matProjection;
 		camera_.TransferMatrix();
 	} else {
-		camera_.UpdateMatrix();
+		camera_.matView = cameraController_->GetViewProjection().matView;
+		camera_.matProjection = cameraController_->GetViewProjection().matProjection;
+		camera_.TransferMatrix();
 	}
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {

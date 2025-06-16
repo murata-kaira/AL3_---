@@ -9,6 +9,11 @@ public:
 
 	void Draw();
 
+		const KamataEngine::WorldTransform& GetWorldTransform() const { return worldTransform_; }
+	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
+
+
+
 private:
 	KamataEngine::WorldTransform worldTransform_;
 
@@ -31,6 +36,7 @@ private:
 	static inline const float kLimitFallSpeed = 1.0;
 
 	static inline const float kJumpAcceleration = 1.0f;
+
 
 	bool onGround_ = true;
 
