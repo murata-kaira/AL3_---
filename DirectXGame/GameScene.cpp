@@ -30,17 +30,19 @@ void GameScene::Initialize() {
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1,18);
+	mapChipField_ = new MapChipField;
+	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
+
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
 
 	player_ = new Player();
 
-	player_->Initialize(modelPlayer_, &camera_,playerPosition);
+	player_->Initialize(modelPlayer_, &camera_, playerPosition);
+
+	player_->SetMapChipField(mapChipField_);
 
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
-
-	mapChipField_ = new MapChipField;
-	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
 	cameraController_ = new CameraController();
 	cameraController_->Initialize();
