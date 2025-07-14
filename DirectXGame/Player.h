@@ -70,9 +70,23 @@ private:
 
 	void CheckMapCollisionUp(CollisionMapInfo& info);
 
+	void CheckMapCollisionDown(CollisionMapInfo& info);
+
+	void CheckMapCollisionRight(CollisionMapInfo& info);
+
+	void CheckMapCollisionLeft(CollisionMapInfo& info);
+
+
+
 	void CheckMapMove(const CollisionMapInfo& info);
 
 	void CheckMapCeiling(const CollisionMapInfo& info);
+
+	void CheckMapWall(const CollisionMapInfo& info);
+
+
+	void CheckMapLanding(const CollisionMapInfo& info);
+
 
 	void AnimateTurn();
 
@@ -88,4 +102,10 @@ private:
 	KamataEngine::Vector3 CornerPosition(const KamataEngine::Vector3& center, Corner corner);
 
 	static inline const float kBlank = 0.1f;
+
+	static inline const float kAttenuationLanding = 0.5f;
+
+	static inline const float kGroundSearchHeight = 0.1f;
+
+	static inline const float kAttenuationWall = 0.5f;
 };
