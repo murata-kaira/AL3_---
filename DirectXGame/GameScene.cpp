@@ -6,11 +6,13 @@ using namespace KamataEngine;
 GameScene::~GameScene() {
 	delete modelBlock_;
 	delete player_;
+	delete enemy_;
 	delete debugCamera_;
 	delete modelSkydome_;
 	delete skydome_;
 	delete modelPlayer_;
 	delete mapChipField_;
+	delete modelEnemy_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -28,12 +30,18 @@ void GameScene::Initialize() {
 
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
+
+
 	debugCamera_ = new DebugCamera(1280, 720);
 
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
+
+	Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(5, 18);
+
 
 	player_ = new Player();
 
@@ -43,6 +51,11 @@ void GameScene::Initialize() {
 
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
+
+	enemy_ = new Enemy();
+	enemy_->Initialize(modelEnemy_, &camera_, enemyPosition);
+
+	enemy_->SetMapChipField(mapChipField_);
 
 	cameraController_ = new CameraController();
 	cameraController_->Initialize();
@@ -62,6 +75,7 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 
 	player_->Update();
+	enemy_->Update();
 	debugCamera_->Update();
 	cameraController_->Update();
 
@@ -103,6 +117,8 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	skydome_->Draw();
+
+	enemy_->Draw();
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {

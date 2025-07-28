@@ -1,11 +1,11 @@
 #pragma once
+#include "CameraController.h"
+#include "Enemy.h"
 #include "KamataEngine.h"
+#include "MapChipField.h"
 #include "Player.h"
 #include "Skydome.h"
 #include <vector>
-#include "MapChipField.h"
-#include"CameraController.h"
-
 
 class GameScene {
 
@@ -15,11 +15,15 @@ class GameScene {
 
 	KamataEngine::Model* modelPlayer_ = nullptr;
 
+	KamataEngine::Model* modelEnemy_ = nullptr;
+
 	KamataEngine::WorldTransform worldTransform_;
 
 	KamataEngine::Camera camera_;
 
 	Player* player_ = nullptr;
+
+	Enemy* enemy_ = nullptr;
 
 	bool isDebugCameraActive_ = false;
 
@@ -33,7 +37,6 @@ class GameScene {
 
 	CameraController* cameraController_;
 
-
 public:
 	~GameScene();
 
@@ -44,5 +47,4 @@ public:
 	void Draw();
 
 	void GenerateBlocks();
-
 };
