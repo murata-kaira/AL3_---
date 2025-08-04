@@ -6,7 +6,6 @@ using namespace KamataEngine;
 GameScene::~GameScene() {
 	delete modelBlock_;
 	delete player_;
-	delete enemy_;
 	delete debugCamera_;
 	delete modelSkydome_;
 	delete skydome_;
@@ -20,6 +19,11 @@ GameScene::~GameScene() {
 		}
 	}
 	worldTransformBlocks_.clear();
+
+	for (Enemy* enemy : enemies_) {
+
+		delete enemy;
+	}
 }
 
 void GameScene::Initialize() {
@@ -32,16 +36,12 @@ void GameScene::Initialize() {
 
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 
-
 	debugCamera_ = new DebugCamera(1280, 720);
 
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
 	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
-
-	Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(5, 18);
-
 
 	player_ = new Player();
 
@@ -52,10 +52,14 @@ void GameScene::Initialize() {
 	skydome_ = new Skydome();
 	skydome_->Initialize(modelSkydome_, &camera_);
 
-	enemy_ = new Enemy();
-	enemy_->Initialize(modelEnemy_, &camera_, enemyPosition);
+	for (int32_t i = 0; i < 3; ++i) {
+		Enemy* newEnemy = new Enemy();
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(6 + i, 18);
 
-	enemy_->SetMapChipField(mapChipField_);
+		newEnemy->Initialize(modelEnemy_, &camera_, enemyPosition);
+
+		enemies_.push_back(newEnemy);
+	}
 
 	cameraController_ = new CameraController();
 	cameraController_->Initialize();
@@ -75,9 +79,12 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 
 	player_->Update();
-	enemy_->Update();
 	debugCamera_->Update();
 	cameraController_->Update();
+
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
 
 #ifdef _DEBUG
 	if (Input::GetInstance()->TriggerKey(DIK_0)) {
@@ -106,6 +113,8 @@ void GameScene::Update() {
 			worldTransformBlock->TransferMatrix();
 		}
 	}
+
+	CheckAllCollisions();
 }
 
 void GameScene::Draw() {
@@ -118,7 +127,9 @@ void GameScene::Draw() {
 
 	skydome_->Draw();
 
-	enemy_->Draw();
+	for (Enemy* enemy : enemies_) {
+		enemy->Draw();
+	}
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -152,4 +163,22 @@ void GameScene::GenerateBlocks() {
 			}
 		}
 	}
+}
+
+void GameScene::CheckAllCollisions() {
+	#pragma region
+	AABB aabb1, aabb2;
+
+	aabb1 = player_->GetAABB();
+
+	for (Enemy* enemy : enemies_) {
+		aabb2 = enemy->GetAABB();
+
+		if (IsCollision(aabb1, aabb2)) {
+			player_->OnCollision(enemy);
+
+			enemy->OnCollision(player_);
+		}
+	}
+	#pragma endregion
 }

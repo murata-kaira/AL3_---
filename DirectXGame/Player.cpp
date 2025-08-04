@@ -1,7 +1,6 @@
 #define NOMINMAX
 #include "Player.h"
 #include "MapChipField.h"
-#include "MyMath.h"
 #include <algorithm>
 #include <numbers>
 
@@ -53,6 +52,31 @@ void Player::Update() {
 
 void Player::Draw() { model_->Draw(worldTransform_, *camera_); }
 
+void Player::OnCollision(const Enemy* enemy) {
+	(void)enemy;
+	velocity_ += Vector3(0,1,0);
+}
+
+Vector3 Player::GetWorldPosition() {
+
+	Vector3 worldPos;
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
+
+	return worldPos;
+}
+
+AABB Player::GetAABB() { 
+Vector3 worldPos = GetWorldPosition();
+	AABB aabb;
+
+aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
+	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
+
+return aabb; 
+}
+
 void Player::InputMove() {
 
 	if (onGround_) {
@@ -91,7 +115,7 @@ void Player::InputMove() {
 		if (Input::GetInstance()->PushKey(DIK_UP)) {
 			velocity_ += Vector3(0, kJumpAcceleration, 0);
 		}
-
+		
 	} else {
 		velocity_ += Vector3(0, -kGravityAcceleration, 0);
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);

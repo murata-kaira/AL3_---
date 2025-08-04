@@ -23,13 +23,13 @@ class GameScene {
 
 	Player* player_ = nullptr;
 
-	Enemy* enemy_ = nullptr;
-
 	bool isDebugCameraActive_ = false;
 
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 
 	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
+
+	std::list<Enemy*> enemies_;
 
 	Skydome* skydome_ = nullptr;
 
@@ -47,4 +47,7 @@ public:
 	void Draw();
 
 	void GenerateBlocks();
+
+	void CheckAllCollisions();
+
 };
