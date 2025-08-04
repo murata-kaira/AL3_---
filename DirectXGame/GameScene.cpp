@@ -12,6 +12,7 @@ GameScene::~GameScene() {
 	delete modelPlayer_;
 	delete mapChipField_;
 	delete modelEnemy_;
+	delete modelDeathParticles_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -35,6 +36,8 @@ void GameScene::Initialize() {
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
+
+	modelDeathParticles_ = Model::CreateFromOBJ("deathParticle", true);
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -74,6 +77,12 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 
 	GenerateBlocks();
+
+	deathParticles_ = new DeathParticles;
+	deathParticles_->Initialize(modelDeathParticles_, &camera_, playerPosition);
+
+
+
 }
 
 void GameScene::Update() {
@@ -81,6 +90,11 @@ void GameScene::Update() {
 	player_->Update();
 	debugCamera_->Update();
 	cameraController_->Update();
+
+	if (deathParticles_) {
+		deathParticles_->Update();
+	}
+
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
@@ -126,6 +140,10 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	skydome_->Draw();
+
+	if (deathParticles_) {
+		deathParticles_->Draw();
+	}
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();

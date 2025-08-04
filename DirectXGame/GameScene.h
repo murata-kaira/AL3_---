@@ -1,5 +1,6 @@
 #pragma once
 #include "CameraController.h"
+#include "DeathParticles.h"
 #include "Enemy.h"
 #include "KamataEngine.h"
 #include "MapChipField.h"
@@ -16,6 +17,8 @@ class GameScene {
 	KamataEngine::Model* modelPlayer_ = nullptr;
 
 	KamataEngine::Model* modelEnemy_ = nullptr;
+
+	KamataEngine::Model* modelDeathParticles_ = nullptr;
 
 	KamataEngine::WorldTransform worldTransform_;
 
@@ -37,6 +40,8 @@ class GameScene {
 
 	CameraController* cameraController_;
 
+	DeathParticles* deathParticles_ = nullptr;
+
 public:
 	~GameScene();
 
@@ -49,5 +54,4 @@ public:
 	void GenerateBlocks();
 
 	void CheckAllCollisions();
-
 };
