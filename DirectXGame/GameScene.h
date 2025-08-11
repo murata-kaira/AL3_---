@@ -10,6 +10,8 @@
 
 class GameScene {
 
+	bool finished_ = false;
+
 	KamataEngine::Model* modelBlock_ = nullptr;
 
 	KamataEngine::Model* modelSkydome_ = nullptr;
@@ -28,6 +30,7 @@ class GameScene {
 
 	bool isDebugCameraActive_ = false;
 
+
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 
 	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
@@ -42,6 +45,16 @@ class GameScene {
 
 	DeathParticles* deathParticles_ = nullptr;
 
+
+	enum class Phase {
+		kPlay,
+		kDeath,
+	};
+
+	Phase phase_;
+
+
+
 public:
 	~GameScene();
 
@@ -54,4 +67,8 @@ public:
 	void GenerateBlocks();
 
 	void CheckAllCollisions();
+
+	void ChangePhase();
+
+	bool IsFnished() const { return finished_; }
 };

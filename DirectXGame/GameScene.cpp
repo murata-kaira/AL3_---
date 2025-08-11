@@ -1,5 +1,5 @@
 #include "GameScene.h"
-#include "MyMath.h"
+
 
 using namespace KamataEngine;
 // デストラクト
@@ -78,9 +78,10 @@ void GameScene::Initialize() {
 
 	GenerateBlocks();
 
-	deathParticles_ = new DeathParticles;
-	deathParticles_->Initialize(modelDeathParticles_, &camera_, playerPosition);
+	//deathParticles_ = new DeathParticles;
+	//deathParticles_->Initialize(modelDeathParticles_, &camera_, playerPosition);
 
+	phase_ = Phase::kPlay;
 
 
 }
@@ -90,6 +91,7 @@ void GameScene::Update() {
 	player_->Update();
 	debugCamera_->Update();
 	cameraController_->Update();
+
 
 	if (deathParticles_) {
 		deathParticles_->Update();
@@ -128,7 +130,15 @@ void GameScene::Update() {
 		}
 	}
 
+	if (deathParticles_ && deathParticles_->IsFnished()) {
+		finished_ = true;
+	}
+
+
 	CheckAllCollisions();
+	ChangePhase();
+
+
 }
 
 void GameScene::Draw() {
@@ -199,4 +209,22 @@ void GameScene::CheckAllCollisions() {
 		}
 	}
 	#pragma endregion
+}
+
+
+void GameScene::ChangePhase() {
+
+	switch (phase_) {
+	case Phase::kPlay:
+
+		if (player_->IsDead()) {
+
+			phase_ = Phase::kDeath;
+
+			const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+
+			deathParticles_ = new DeathParticles;
+			deathParticles_->Initialize(modelDeathParticles_, &camera_, deathParticlesPosition);
+		}
+	}
 }

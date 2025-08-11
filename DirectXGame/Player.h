@@ -26,6 +26,9 @@ public:
 	const KamataEngine::WorldTransform& GetWorldTransform() const { return worldTransform_; }
 	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
 
+	bool IsDead() const { return isDead_; }
+
+
 private:
 	KamataEngine::WorldTransform worldTransform_;
 
@@ -76,6 +79,8 @@ private:
 		bool hitWall = false;
 		KamataEngine::Vector3 move;
 	};
+
+	bool isDead_ = false;
 
 	void InputMove();
 
