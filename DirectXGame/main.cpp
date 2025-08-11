@@ -1,6 +1,5 @@
 #include "GameScene.h"
 #include "KamataEngine.h"
-#include "MyMath.h"
 #include "TitleScene.h"
 #include <Windows.h>
 
@@ -33,7 +32,7 @@ void ChangeScene() {
 		}
 		break;
 	case Scene::kGame:
-		if (gameScene->IsFinished()) {
+		if (gameScene->IsFnished()) {
 		
 			scene = Scene::kTitle;
 

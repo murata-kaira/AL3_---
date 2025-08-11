@@ -10,7 +10,6 @@
 
 class GameScene {
 
-	bool finished_ = false;
 
 	KamataEngine::Model* modelBlock_ = nullptr;
 
@@ -53,7 +52,7 @@ class GameScene {
 
 	Phase phase_;
 
-
+	bool finished_ = false;
 
 public:
 	~GameScene();

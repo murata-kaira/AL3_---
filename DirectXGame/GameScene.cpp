@@ -1,4 +1,5 @@
 #include "GameScene.h"
+#include "Math.h"
 
 
 using namespace KamataEngine;
@@ -130,7 +131,7 @@ void GameScene::Update() {
 		}
 	}
 
-	if (deathParticles_ && deathParticles_->IsFnished()) {
+	if (deathParticles_ && deathParticles_->IsFinished()) {
 		finished_ = true;
 	}
 

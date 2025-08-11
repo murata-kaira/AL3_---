@@ -12,6 +12,9 @@ public:
 
 	void Draw();
 
+bool IsFinished() const { return finished_; }
+
+	
 private:
 	
 	KamataEngine::Model* model_ = nullptr;
@@ -23,6 +26,8 @@ private:
 	KamataEngine::ObjectColor objectColor_;
 	KamataEngine::Vector4 color_;
 
+
+
 	static inline const uint32_t kNumParticles = 8;
 
 	std::array<KamataEngine::WorldTransform, kNumParticles> worldTransforms_;
@@ -33,8 +38,9 @@ private:
 
 	static inline const float kAngleUnit = 2.0f * std::numbers::pi_v<float> / kNumParticles;
 
-	bool isFinished_ = false;
+	bool finished_ = false;
 	float counter_ = 0.0f;
+
 
 
 };
