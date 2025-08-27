@@ -1,7 +1,6 @@
 #include "GameScene.h"
 #include "Math.h"
 
-
 using namespace KamataEngine;
 // デストラクト
 GameScene::~GameScene() {
@@ -14,6 +13,7 @@ GameScene::~GameScene() {
 	delete mapChipField_;
 	delete modelEnemy_;
 	delete modelDeathParticles_;
+	delete fade_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -79,25 +79,27 @@ void GameScene::Initialize() {
 
 	GenerateBlocks();
 
-	//deathParticles_ = new DeathParticles;
-	//deathParticles_->Initialize(modelDeathParticles_, &camera_, playerPosition);
+	// deathParticles_ = new DeathParticles;
+	// deathParticles_->Initialize(modelDeathParticles_, &camera_, playerPosition);
 
-	phase_ = Phase::kPlay;
+	phase_ = Phase::kFadeIn;
 
-
+	fade_ = new Fade();
+	fade_->Initialize();
+	fade_->Start(Fade::Status::FadeIn, 1.0f);
 }
 
 void GameScene::Update() {
+
+	fade_->Update();
 
 	player_->Update();
 	debugCamera_->Update();
 	cameraController_->Update();
 
-
 	if (deathParticles_) {
 		deathParticles_->Update();
 	}
-
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
@@ -131,15 +133,8 @@ void GameScene::Update() {
 		}
 	}
 
-	if (deathParticles_ && deathParticles_->IsFinished()) {
-		finished_ = true;
-	}
-
-
 	CheckAllCollisions();
 	ChangePhase();
-
-
 }
 
 void GameScene::Draw() {
@@ -168,6 +163,8 @@ void GameScene::Draw() {
 		}
 	}
 	Model::PostDraw();
+
+	fade_->Draw();
 }
 
 void GameScene::GenerateBlocks() {
@@ -195,7 +192,7 @@ void GameScene::GenerateBlocks() {
 }
 
 void GameScene::CheckAllCollisions() {
-	#pragma region
+#pragma region
 	AABB aabb1, aabb2;
 
 	aabb1 = player_->GetAABB();
@@ -209,9 +206,8 @@ void GameScene::CheckAllCollisions() {
 			enemy->OnCollision(player_);
 		}
 	}
-	#pragma endregion
+#pragma endregion
 }
-
 
 void GameScene::ChangePhase() {
 
@@ -227,5 +223,22 @@ void GameScene::ChangePhase() {
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialize(modelDeathParticles_, &camera_, deathParticlesPosition);
 		}
+		break;
+	case Phase::kFadeIn:
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kPlay;
+		}
+		break;
+	case Phase::kDeath:
+		if (deathParticles_->IsFinished()) {
+			phase_ = Phase::kFadeOut;
+			fade_->Start(Fade::Status::FadeOut, 1.0f);
+		}
+		break;
+	case Phase::kFadeOut:
+		if (fade_->IsFinished()) {
+			finished_ = true;
+		}
+		break;
 	}
 }

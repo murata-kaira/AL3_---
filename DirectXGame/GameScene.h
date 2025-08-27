@@ -7,6 +7,9 @@
 #include "Player.h"
 #include "Skydome.h"
 #include <vector>
+#include"Fade.h"
+
+
 
 class GameScene {
 
@@ -48,11 +51,16 @@ class GameScene {
 	enum class Phase {
 		kPlay,
 		kDeath,
+		kFadeIn,
+		kFadeOut
 	};
 
 	Phase phase_;
 
 	bool finished_ = false;
+
+	Fade* fade_ = nullptr;
+
 
 public:
 	~GameScene();
