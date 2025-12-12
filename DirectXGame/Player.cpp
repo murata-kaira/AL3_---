@@ -405,15 +405,17 @@ void Player::UpdateWireInput() {
 			// Try to attach to a wire
 			Vector3 wirePosition;
 			if (FindNearestWire(wirePosition)) {
-				isWireAttached_ = true;
 				wireAnchorPosition_ = wirePosition;
 				
 				Vector3 toPlayer = worldTransform_.translation_ - wireAnchorPosition_;
 				wireLength_ = std::sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 				
-				if (wireLength_ > kWireMaxLength || wireLength_ < 0.01f) {
+				// Check wire length validity before using it in calculations
+				if (wireLength_ < 0.1f || wireLength_ > kWireMaxLength) {
+					// Wire is too short or too long, don't attach
 					isWireAttached_ = false;
 				} else {
+					isWireAttached_ = true;
 					wireAngle_ = std::atan2(-toPlayer.x, toPlayer.y);
 					wireAngularVelocity_ = velocity_.x / wireLength_;
 					velocity_ = Vector3(0, 0, 0);
@@ -424,7 +426,7 @@ void Player::UpdateWireInput() {
 }
 
 void Player::UpdateWirePhysics() {
-	if (!isWireAttached_ || wireLength_ < 0.01f) {
+	if (!isWireAttached_ || wireLength_ < 0.1f) {
 		isWireAttached_ = false;
 		return;
 	}
