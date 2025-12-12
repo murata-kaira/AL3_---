@@ -26,19 +26,22 @@ void Player::Update() {
 
 	InputMove();
 
-	CollisionMapInfo collisionMapInfo;
+	// Skip collision detection when swinging
+	if (!isSwinging_) {
+		CollisionMapInfo collisionMapInfo;
 
-	collisionMapInfo.move = velocity_;
+		collisionMapInfo.move = velocity_;
 
-	CheckMapCollision(collisionMapInfo);
+		CheckMapCollision(collisionMapInfo);
 
-	CheckMapMove(collisionMapInfo);
+		CheckMapMove(collisionMapInfo);
 
-	CheckMapWall(collisionMapInfo);
+		CheckMapWall(collisionMapInfo);
 
-	CheckMapLanding(collisionMapInfo);
+		CheckMapLanding(collisionMapInfo);
 
-	CheckMapLanding(collisionMapInfo);
+		CheckMapLanding(collisionMapInfo);
+	}
 
 	AnimateTurn();
 
@@ -82,6 +85,27 @@ AABB Player::GetAABB() {
 }
 
 void Player::InputMove() {
+
+	// Check for wire attachment/release with SPACE key
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		if (isSwinging_) {
+			// Release from wire
+			isSwinging_ = false;
+			// Convert swing velocity to movement velocity
+			float angle = swingAngle_;
+			velocity_.x = swingVelocity_ * std::sin(angle) * 2.0f;
+			velocity_.y = -swingVelocity_ * std::cos(angle) * 2.0f;
+		} else {
+			// Try to attach to wire
+			CheckWireAttachment();
+		}
+	}
+
+	// If swinging on wire, update swing physics
+	if (isSwinging_) {
+		UpdateWireSwing();
+		return;
+	}
 
 	if (onGround_) {
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
@@ -383,4 +407,81 @@ KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center
     };
 
 	return center + offsetTable[static_cast<uint32_t>(corner)];
+}
+
+void Player::CheckWireAttachment() {
+	Vector3 wirePos = FindNearestWire();
+	
+	// Check if wire found and in range
+	Vector3 toWire = wirePos - worldTransform_.translation_;
+	float distance = std::sqrt(toWire.x * toWire.x + toWire.y * toWire.y);
+	
+	if (distance < kWireDetectionRange && distance > 0.1f) {
+		isSwinging_ = true;
+		wireAnchorPos_ = wirePos;
+		wireLength_ = distance;
+		
+		// Calculate initial swing angle
+		swingAngle_ = std::atan2(toWire.x, -toWire.y);
+		
+		// Convert current velocity to swing velocity
+		swingVelocity_ = (velocity_.x * std::sin(swingAngle_) - velocity_.y * std::cos(swingAngle_)) / wireLength_;
+		
+		onGround_ = false;
+	}
+}
+
+void Player::UpdateWireSwing() {
+	// Pendulum physics
+	float angularAcceleration = kWireGravity * std::sin(swingAngle_) / wireLength_;
+	swingVelocity_ += angularAcceleration;
+	swingVelocity_ *= kWireSwingDamping;
+	swingAngle_ += swingVelocity_;
+	
+	// Apply directional input to swing
+	if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+		swingVelocity_ += 0.002f;
+	}
+	if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+		swingVelocity_ -= 0.002f;
+	}
+	
+	// Update player position based on swing
+	worldTransform_.translation_.x = wireAnchorPos_.x + wireLength_ * std::sin(swingAngle_);
+	worldTransform_.translation_.y = wireAnchorPos_.y - wireLength_ * std::cos(swingAngle_);
+}
+
+KamataEngine::Vector3 Player::FindNearestWire() {
+	if (!mapChipField_) {
+		return worldTransform_.translation_;
+	}
+	
+	Vector3 nearestWire = worldTransform_.translation_;
+	float nearestDistance = kWireDetectionRange + 1.0f;
+	
+	// Search around player position
+	Vector3 playerPos = worldTransform_.translation_;
+	MapChipField::IndexSet centerIndex = mapChipField_->GetMapChipIndexSetByPosition(playerPos);
+	
+	// Check surrounding area (5x5 grid)
+	for (int dy = -2; dy <= 2; ++dy) {
+		for (int dx = -2; dx <= 2; ++dx) {
+			uint32_t checkX = centerIndex.xIndex + dx;
+			uint32_t checkY = centerIndex.yIndex + dy;
+			
+			MapChipType type = mapChipField_->GetMapChipTypeByIndex(checkX, checkY);
+			if (type == MapChipType::kWire) {
+				Vector3 wirePos = mapChipField_->GetMapChipPositionByIndex(checkX, checkY);
+				Vector3 toWire = wirePos - playerPos;
+				float distance = std::sqrt(toWire.x * toWire.x + toWire.y * toWire.y);
+				
+				if (distance < nearestDistance) {
+					nearestDistance = distance;
+					nearestWire = wirePos;
+				}
+			}
+		}
+	}
+	
+	return nearestWire;
 }

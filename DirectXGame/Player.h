@@ -61,7 +61,19 @@ private:
 
 	static inline const float kHeight = 0.8f;
 
+	// Wire constants
+	static inline const float kWireGravity = 0.01f;
+	static inline const float kWireSwingDamping = 0.99f;
+	static inline const float kWireDetectionRange = 3.0f;
+
 	bool onGround_ = true;
+
+	// Wire swinging variables
+	bool isSwinging_ = false;
+	KamataEngine::Vector3 wireAnchorPos_ = {};
+	float swingAngle_ = 0.0f;
+	float swingVelocity_ = 0.0f;
+	float wireLength_ = 0.0f;
 
 	enum class LRDirection {
 		kRight,
@@ -107,6 +119,11 @@ private:
 
 
 	void AnimateTurn();
+
+	// Wire functions
+	void UpdateWireSwing();
+	void CheckWireAttachment();
+	KamataEngine::Vector3 FindNearestWire();
 
 	enum Corner {
 		kRightBottom,
