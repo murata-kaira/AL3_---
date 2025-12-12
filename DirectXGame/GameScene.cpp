@@ -5,6 +5,7 @@ using namespace KamataEngine;
 // デストラクト
 GameScene::~GameScene() {
 	delete modelBlock_;
+	delete modelWire_;
 	delete player_;
 	delete debugCamera_;
 	delete modelSkydome_;
@@ -22,6 +23,13 @@ GameScene::~GameScene() {
 	}
 	worldTransformBlocks_.clear();
 
+	for (std::vector<WorldTransform*>& worldTransformWireLine : worldTransformWires_) {
+		for (WorldTransform* worldTransformWire : worldTransformWireLine) {
+			delete worldTransformWire;
+		}
+	}
+	worldTransformWires_.clear();
+
 	for (Enemy* enemy : enemies_) {
 
 		delete enemy;
@@ -31,6 +39,8 @@ GameScene::~GameScene() {
 void GameScene::Initialize() {
 
 	modelBlock_ = Model::CreateFromOBJ("block", true);
+
+	modelWire_ = Model::CreateFromOBJ("block", true);
 
 	modelPlayer_ = Model::CreateFromOBJ("player", true);
 
@@ -162,6 +172,15 @@ void GameScene::Draw() {
 			modelBlock_->Draw(*worldTransformBlock, camera_);
 		}
 	}
+
+	for (std::vector<WorldTransform*>& worldTransformWireLine : worldTransformWires_) {
+		for (WorldTransform* worldTransformWire : worldTransformWireLine) {
+			if (!worldTransformWire)
+				continue;
+			modelWire_->Draw(*worldTransformWire, camera_);
+		}
+	}
+
 	Model::PostDraw();
 
 	fade_->Draw();
@@ -173,9 +192,11 @@ void GameScene::GenerateBlocks() {
 	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
 
 	worldTransformBlocks_.resize(numBlockVirtical);
+	worldTransformWires_.resize(numBlockVirtical);
 
 	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
 		worldTransformBlocks_[i].resize(numBlockHorizontal);
+		worldTransformWires_[i].resize(numBlockHorizontal);
 	}
 
 	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
@@ -186,6 +207,13 @@ void GameScene::GenerateBlocks() {
 				worldTransform->Initialize();
 				worldTransformBlocks_[i][j] = worldTransform;
 				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+			} else if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kWire) {
+
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformWires_[i][j] = worldTransform;
+				worldTransformWires_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+				worldTransformWires_[i][j]->scale_ = {0.3f, 0.3f, 0.3f};
 			}
 		}
 	}
