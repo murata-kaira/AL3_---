@@ -345,4 +345,5 @@ MigrationBackup/
 
 NoviceResources/
 DirectXGame/imgui.ini
-Novice/imgui.ini*.bak
+Novice/imgui.ini
+*.bak

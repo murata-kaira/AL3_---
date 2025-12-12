@@ -39,8 +39,6 @@ void Player::Update() {
 		CheckMapWall(collisionMapInfo);
 
 		CheckMapLanding(collisionMapInfo);
-
-		CheckMapLanding(collisionMapInfo);
 	}
 
 	AnimateTurn();
@@ -93,8 +91,8 @@ void Player::InputMove() {
 			isSwinging_ = false;
 			// Convert swing velocity to movement velocity
 			float angle = swingAngle_;
-			velocity_.x = swingVelocity_ * std::sin(angle) * 2.0f;
-			velocity_.y = -swingVelocity_ * std::cos(angle) * 2.0f;
+			velocity_.x = swingVelocity_ * std::sin(angle) * kReleaseVelocityMultiplier;
+			velocity_.y = -swingVelocity_ * std::cos(angle) * kReleaseVelocityMultiplier;
 		} else {
 			// Try to attach to wire
 			CheckWireAttachment();
@@ -440,10 +438,10 @@ void Player::UpdateWireSwing() {
 	
 	// Apply directional input to swing
 	if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
-		swingVelocity_ += 0.002f;
+		swingVelocity_ += kSwingInputForce;
 	}
 	if (Input::GetInstance()->PushKey(DIK_LEFT)) {
-		swingVelocity_ -= 0.002f;
+		swingVelocity_ -= kSwingInputForce;
 	}
 	
 	// Update player position based on swing

@@ -65,6 +65,8 @@ private:
 	static inline const float kWireGravity = 0.01f;
 	static inline const float kWireSwingDamping = 0.99f;
 	static inline const float kWireDetectionRange = 3.0f;
+	static inline const float kSwingInputForce = 0.002f;
+	static inline const float kReleaseVelocityMultiplier = 2.0f;
 
 	bool onGround_ = true;
 
