@@ -417,6 +417,7 @@ void Player::UpdateWireInput() {
 				} else {
 					isWireAttached_ = true;
 					wireAngle_ = std::atan2(-toPlayer.x, toPlayer.y);
+					// Safe to divide by wireLength_ here as we've validated it's >= 0.1f
 					wireAngularVelocity_ = velocity_.x / wireLength_;
 					velocity_ = Vector3(0, 0, 0);
 				}
@@ -431,7 +432,7 @@ void Player::UpdateWirePhysics() {
 		return;
 	}
 
-	// Pendulum physics
+	// Pendulum physics - wireLength_ is validated to be >= 0.1f above
 	float angularAcceleration = -kWireGravity * std::sin(wireAngle_) / wireLength_;
 	wireAngularVelocity_ += angularAcceleration;
 	wireAngularVelocity_ *= kWireSwingDamping;
