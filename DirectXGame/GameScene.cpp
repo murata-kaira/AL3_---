@@ -143,6 +143,17 @@ void GameScene::Update() {
 		}
 	}
 
+	for (std::vector<WorldTransform*>& worldTransformWireLine : worldTransformWires_) {
+		for (WorldTransform* worldTransformWire : worldTransformWireLine) {
+			if (!worldTransformWire)
+				continue;
+
+			worldTransformWire->matWorld_ = MakeAffineMatrix(worldTransformWire->scale_, worldTransformWire->rotation_, worldTransformWire->translation_);
+
+			worldTransformWire->TransferMatrix();
+		}
+	}
+
 	CheckAllCollisions();
 	ChangePhase();
 }
