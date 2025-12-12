@@ -3,6 +3,7 @@
 #include "MapChipField.h"
 #include <algorithm>
 #include <numbers>
+#include <cmath>
 
 using namespace KamataEngine;
 using namespace MathUtility;
@@ -24,7 +25,13 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 
 void Player::Update() {
 
-	InputMove();
+	UpdateWireInput();
+
+	if (isWireAttached_) {
+		UpdateWirePhysics();
+	} else {
+		InputMove();
+	}
 
 	CollisionMapInfo collisionMapInfo;
 
@@ -383,4 +390,92 @@ KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center
     };
 
 	return center + offsetTable[static_cast<uint32_t>(corner)];
+}
+
+void Player::UpdateWireInput() {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		if (isWireAttached_) {
+			// Detach from wire
+			isWireAttached_ = false;
+			// Preserve some velocity from wire swing
+			float speed = wireLength_ * wireAngularVelocity_;
+			velocity_.x = -speed * std::sin(wireAngle_);
+			velocity_.y = speed * std::cos(wireAngle_);
+		} else {
+			// Try to attach to a wire
+			Vector3 wirePosition;
+			if (FindNearestWire(wirePosition)) {
+				isWireAttached_ = true;
+				wireAnchorPosition_ = wirePosition;
+				
+				Vector3 toPlayer = worldTransform_.translation_ - wireAnchorPosition_;
+				wireLength_ = std::sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
+				
+				if (wireLength_ > kWireMaxLength) {
+					isWireAttached_ = false;
+				} else {
+					wireAngle_ = std::atan2(-toPlayer.x, toPlayer.y);
+					wireAngularVelocity_ = velocity_.x / wireLength_;
+					velocity_ = Vector3(0, 0, 0);
+				}
+			}
+		}
+	}
+}
+
+void Player::UpdateWirePhysics() {
+	if (!isWireAttached_) {
+		return;
+	}
+
+	// Pendulum physics
+	float angularAcceleration = -kWireGravity * std::sin(wireAngle_) / wireLength_;
+	wireAngularVelocity_ += angularAcceleration;
+	wireAngularVelocity_ *= kWireSwingDamping;
+	wireAngle_ += wireAngularVelocity_;
+
+	// Calculate new position based on wire angle and length
+	Vector3 newPosition;
+	newPosition.x = wireAnchorPosition_.x - wireLength_ * std::sin(wireAngle_);
+	newPosition.y = wireAnchorPosition_.y - wireLength_ * std::cos(wireAngle_);
+	newPosition.z = worldTransform_.translation_.z;
+
+	// Set velocity based on position change
+	velocity_ = newPosition - worldTransform_.translation_;
+}
+
+bool Player::FindNearestWire(Vector3& wirePosition) {
+	if (!mapChipField_) {
+		return false;
+	}
+
+	Vector3 playerPos = worldTransform_.translation_;
+	float minDistance = kWireDetectionRange;
+	bool found = false;
+
+	// Search in a radius around the player
+	int searchRadius = static_cast<int>(std::ceil(kWireDetectionRange));
+	MapChipField::IndexSet playerIndex = mapChipField_->GetMapChipIndexSetByPosition(playerPos);
+
+	for (int dy = -searchRadius; dy <= searchRadius; ++dy) {
+		for (int dx = -searchRadius; dx <= searchRadius; ++dx) {
+			uint32_t checkX = playerIndex.xIndex + dx;
+			uint32_t checkY = playerIndex.yIndex + dy;
+
+			MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(checkX, checkY);
+			if (chipType == MapChipType::kWire) {
+				Vector3 chipPos = mapChipField_->GetMapChipPositionByIndex(checkX, checkY);
+				Vector3 diff = chipPos - playerPos;
+				float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+
+				if (distance < minDistance) {
+					minDistance = distance;
+					wirePosition = chipPos;
+					found = true;
+				}
+			}
+		}
+	}
+
+	return found;
 }

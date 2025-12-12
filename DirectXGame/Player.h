@@ -126,4 +126,20 @@ private:
 	static inline const float kGroundSearchHeight = 0.1f;
 
 	static inline const float kAttenuationWall = 0.5f;
+
+	// Wire system
+	bool isWireAttached_ = false;
+	KamataEngine::Vector3 wireAnchorPosition_ = {};
+	float wireLength_ = 0.0f;
+	float wireAngle_ = 0.0f;
+	float wireAngularVelocity_ = 0.0f;
+
+	static inline const float kWireGravity = 0.01f;
+	static inline const float kWireSwingDamping = 0.99f;
+	static inline const float kWireDetectionRange = 3.0f;
+	static inline const float kWireMaxLength = 10.0f;
+
+	void UpdateWireInput();
+	void UpdateWirePhysics();
+	bool FindNearestWire(KamataEngine::Vector3& wirePosition);
 };
