@@ -411,7 +411,7 @@ void Player::UpdateWireInput() {
 				Vector3 toPlayer = worldTransform_.translation_ - wireAnchorPosition_;
 				wireLength_ = std::sqrt(toPlayer.x * toPlayer.x + toPlayer.y * toPlayer.y);
 				
-				if (wireLength_ > kWireMaxLength) {
+				if (wireLength_ > kWireMaxLength || wireLength_ < 0.01f) {
 					isWireAttached_ = false;
 				} else {
 					wireAngle_ = std::atan2(-toPlayer.x, toPlayer.y);
@@ -424,7 +424,8 @@ void Player::UpdateWireInput() {
 }
 
 void Player::UpdateWirePhysics() {
-	if (!isWireAttached_) {
+	if (!isWireAttached_ || wireLength_ < 0.01f) {
+		isWireAttached_ = false;
 		return;
 	}
 
@@ -459,12 +460,17 @@ bool Player::FindNearestWire(Vector3& wirePosition) {
 
 	for (int dy = -searchRadius; dy <= searchRadius; ++dy) {
 		for (int dx = -searchRadius; dx <= searchRadius; ++dx) {
-			uint32_t checkX = playerIndex.xIndex + dx;
-			uint32_t checkY = playerIndex.yIndex + dy;
+			int checkX = static_cast<int>(playerIndex.xIndex) + dx;
+			int checkY = static_cast<int>(playerIndex.yIndex) + dy;
+			
+			// Skip if out of bounds
+			if (checkX < 0 || checkY < 0) {
+				continue;
+			}
 
-			MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(checkX, checkY);
+			MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(static_cast<uint32_t>(checkX), static_cast<uint32_t>(checkY));
 			if (chipType == MapChipType::kWire) {
-				Vector3 chipPos = mapChipField_->GetMapChipPositionByIndex(checkX, checkY);
+				Vector3 chipPos = mapChipField_->GetMapChipPositionByIndex(static_cast<uint32_t>(checkX), static_cast<uint32_t>(checkY));
 				Vector3 diff = chipPos - playerPos;
 				float distance = std::sqrt(diff.x * diff.x + diff.y * diff.y);
 
