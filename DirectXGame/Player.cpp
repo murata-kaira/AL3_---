@@ -3,6 +3,7 @@
 #include "MapChipField.h"
 #include <algorithm>
 #include <numbers>
+#include <cmath>
 
 using namespace KamataEngine;
 using namespace MathUtility;
@@ -24,23 +25,29 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 
 void Player::Update() {
 
-	InputMove();
+	CheckSwingPoints();
 
-	CollisionMapInfo collisionMapInfo;
+	if (isSwinging_) {
+		UpdateSwingPhysics();
+	} else {
+		InputMove();
 
-	collisionMapInfo.move = velocity_;
+		CollisionMapInfo collisionMapInfo;
 
-	CheckMapCollision(collisionMapInfo);
+		collisionMapInfo.move = velocity_;
 
-	CheckMapMove(collisionMapInfo);
+		CheckMapCollision(collisionMapInfo);
 
-	CheckMapWall(collisionMapInfo);
+		CheckMapMove(collisionMapInfo);
 
-	CheckMapLanding(collisionMapInfo);
+		CheckMapWall(collisionMapInfo);
 
-	CheckMapLanding(collisionMapInfo);
+		CheckMapLanding(collisionMapInfo);
 
-	AnimateTurn();
+		CheckMapLanding(collisionMapInfo);
+
+		AnimateTurn();
+	}
 
 	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
 
@@ -383,4 +390,91 @@ KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center
     };
 
 	return center + offsetTable[static_cast<uint32_t>(corner)];
+}
+
+void Player::CheckSwingPoints() {
+	// Check if player presses space to grab a rope
+	if (!isSwinging_ && Input::GetInstance()->TriggerKey(DIK_SPACE) && !onGround_) {
+		// Search for nearby swing points
+		Vector3 playerPos = worldTransform_.translation_;
+		
+		// Check surrounding blocks for swing points
+		for (int dy = -2; dy <= 2; ++dy) {
+			for (int dx = -2; dx <= 2; ++dx) {
+				MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(playerPos);
+				int checkX = indexSet.xIndex + dx;
+				int checkY = indexSet.yIndex + dy;
+				
+				if (checkX >= 0 && checkX < static_cast<int>(mapChipField_->GetNumBlockHorizontal()) &&
+				    checkY >= 0 && checkY < static_cast<int>(mapChipField_->GetNumBlockVirtical())) {
+					
+					MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(checkX, checkY);
+					if (chipType == MapChipType::kSwingPoint) {
+						Vector3 swingPos = mapChipField_->GetMapChipPositionByIndex(checkX, checkY);
+						float distance = std::sqrt(
+						    (swingPos.x - playerPos.x) * (swingPos.x - playerPos.x) +
+						    (swingPos.y - playerPos.y) * (swingPos.y - playerPos.y)
+						);
+						
+						if (distance <= kMaxRopeLength) {
+							// Grab the rope
+							isSwinging_ = true;
+							swingPoint_ = swingPos;
+							ropeLength_ = distance;
+							onGround_ = false;
+							
+							// Calculate initial swing angle
+							Vector3 toPlayer = playerPos - swingPos;
+							swingAngle_ = std::atan2(toPlayer.x, -toPlayer.y);
+							swingAngularVelocity_ = velocity_.x * 0.3f; // Convert horizontal velocity to angular
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	// Release rope with space or when hitting ground
+	if (isSwinging_ && (Input::GetInstance()->TriggerKey(DIK_SPACE) || onGround_)) {
+		ReleaseSwing();
+	}
+}
+
+void Player::UpdateSwingPhysics() {
+	// Pendulum physics
+	float gravity = kSwingGravity;
+	float angularAcceleration = -gravity * std::sin(swingAngle_) / ropeLength_;
+	
+	// Player input for pumping the swing
+	if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+		swingAngularVelocity_ += kSwingInputForce;
+	}
+	if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+		swingAngularVelocity_ -= kSwingInputForce;
+	}
+	
+	swingAngularVelocity_ += angularAcceleration;
+	swingAngularVelocity_ *= kSwingDamping;
+	swingAngle_ += swingAngularVelocity_;
+	
+	// Update player position based on pendulum motion
+	worldTransform_.translation_.x = swingPoint_.x + ropeLength_ * std::sin(swingAngle_);
+	worldTransform_.translation_.y = swingPoint_.y - ropeLength_ * std::cos(swingAngle_);
+	
+	// Update velocity for when released
+	velocity_.x = swingAngularVelocity_ * ropeLength_ * std::cos(swingAngle_);
+	velocity_.y = swingAngularVelocity_ * ropeLength_ * std::sin(swingAngle_);
+}
+
+void Player::ReleaseSwing() {
+	isSwinging_ = false;
+	
+	// Give a boost to velocity when releasing
+	velocity_.x *= kSwingReleaseBoost;
+	velocity_.y *= kSwingReleaseBoost;
+	
+	// Clamp to reasonable values
+	velocity_.x = std::clamp(velocity_.x, -2.0f, 2.0f);
+	velocity_.y = std::clamp(velocity_.y, -2.0f, 2.0f);
 }

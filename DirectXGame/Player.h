@@ -82,7 +82,24 @@ private:
 
 	bool isDead_ = false;
 
+	// Swing mechanic variables
+	bool isSwinging_ = false;
+	KamataEngine::Vector3 swingPoint_ = {};
+	float swingAngle_ = 0.0f;
+	float swingAngularVelocity_ = 0.0f;
+	float ropeLength_ = 0.0f;
+
+	static inline const float kSwingGravity = 0.05f;
+	static inline const float kSwingDamping = 0.99f;
+	static inline const float kSwingInputForce = 0.01f;
+	static inline const float kMaxRopeLength = 5.0f;
+	static inline const float kSwingReleaseBoost = 1.5f;
+
 	void InputMove();
+
+	void CheckSwingPoints();
+	void UpdateSwingPhysics();
+	void ReleaseSwing();
 
 	void CheckMapCollision(CollisionMapInfo& info);
 
