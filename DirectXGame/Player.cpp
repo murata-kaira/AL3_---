@@ -420,6 +420,29 @@ void Player::ShootWire() {
 }
 
 void Player::UpdateWireExtension() {
+	// Check for canceling current wire and shooting a new one
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		// Cancel current wire and shoot new one
+		Vector3 playerPos = worldTransform_.translation_;
+		wireDirection_ = Vector3(0, 0, 0);
+		
+		// Shoot in the direction player is facing
+		if (lrDirection_ == LRDirection::kRight) {
+			wireDirection_.x = kWireDiagonalRatio;
+		} else {
+			wireDirection_.x = -kWireDiagonalRatio;
+		}
+		wireDirection_.y = kWireVerticalRatio;
+		
+		// Normalize the direction
+		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
+		wireDirection_.x /= length;
+		wireDirection_.y /= length;
+		
+		wireExtension_ = 0.0f;  // Reset extension to start fresh
+		return;
+	}
+	
 	Vector3 playerPos = worldTransform_.translation_;
 	
 	// Extend the wire
@@ -463,9 +486,30 @@ void Player::UpdateWireExtension() {
 }
 
 void Player::UpdateSwingPhysics() {
-	// Check for manual release with space key
+	// Check for shooting new wire with space key (continuous wire shooting)
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		// Release from current wire and start shooting new one
 		ReleaseSwing();
+		
+		// Start shooting new wire immediately
+		Vector3 playerPos = worldTransform_.translation_;
+		wireDirection_ = Vector3(0, 0, 0);
+		
+		// Shoot in the direction player is facing
+		if (lrDirection_ == LRDirection::kRight) {
+			wireDirection_.x = kWireDiagonalRatio;
+		} else {
+			wireDirection_.x = -kWireDiagonalRatio;
+		}
+		wireDirection_.y = kWireVerticalRatio;
+		
+		// Normalize the direction
+		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
+		wireDirection_.x /= length;
+		wireDirection_.y /= length;
+		
+		isShootingWire_ = true;
+		wireExtension_ = 0.0f;
 		return;
 	}
 	
