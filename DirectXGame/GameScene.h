@@ -24,6 +24,8 @@ class GameScene {
 
 	KamataEngine::Model* modelDeathParticles_ = nullptr;
 
+	KamataEngine::Model* modelSwingPoint_ = nullptr;
+
 	KamataEngine::WorldTransform worldTransform_;
 
 	KamataEngine::Camera camera_;
@@ -36,6 +38,8 @@ class GameScene {
 	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 
 	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformBlocks_;
+
+	std::vector<std::vector<KamataEngine::WorldTransform*>> worldTransformSwingPoints_;
 
 	std::list<Enemy*> enemies_;
 

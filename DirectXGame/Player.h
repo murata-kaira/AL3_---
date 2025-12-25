@@ -28,6 +28,9 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	bool IsSwinging() const { return isSwinging_; }
+	const KamataEngine::Vector3& GetSwingPoint() const { return swingPoint_; }
+
 
 private:
 	KamataEngine::WorldTransform worldTransform_;

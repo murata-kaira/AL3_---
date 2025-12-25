@@ -13,6 +13,7 @@ GameScene::~GameScene() {
 	delete mapChipField_;
 	delete modelEnemy_;
 	delete modelDeathParticles_;
+	delete modelSwingPoint_;
 	delete fade_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
@@ -21,6 +22,13 @@ GameScene::~GameScene() {
 		}
 	}
 	worldTransformBlocks_.clear();
+
+	for (std::vector<WorldTransform*>& worldTransformSwingPointLine : worldTransformSwingPoints_) {
+		for (WorldTransform* worldTransformSwingPoint : worldTransformSwingPointLine) {
+			delete worldTransformSwingPoint;
+		}
+	}
+	worldTransformSwingPoints_.clear();
 
 	for (Enemy* enemy : enemies_) {
 
@@ -39,6 +47,8 @@ void GameScene::Initialize() {
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 
 	modelDeathParticles_ = Model::CreateFromOBJ("deathParticle", true);
+
+	modelSwingPoint_ = Model::CreateFromOBJ("block", true);  // Reuse block model for swing points
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -162,6 +172,16 @@ void GameScene::Draw() {
 			modelBlock_->Draw(*worldTransformBlock, camera_);
 		}
 	}
+
+	// Draw swing points
+	for (std::vector<WorldTransform*>& worldTransformSwingPointLine : worldTransformSwingPoints_) {
+		for (WorldTransform* worldTransformSwingPoint : worldTransformSwingPointLine) {
+			if (!worldTransformSwingPoint)
+				continue;
+			modelSwingPoint_->Draw(*worldTransformSwingPoint, camera_);
+		}
+	}
+
 	Model::PostDraw();
 
 	fade_->Draw();
@@ -173,19 +193,31 @@ void GameScene::GenerateBlocks() {
 	uint32_t numBlockHorizontal = mapChipField_->GetNumBlockHorizontal();
 
 	worldTransformBlocks_.resize(numBlockVirtical);
+	worldTransformSwingPoints_.resize(numBlockVirtical);
 
 	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
 		worldTransformBlocks_[i].resize(numBlockHorizontal);
+		worldTransformSwingPoints_[i].resize(numBlockHorizontal);
 	}
 
 	for (uint32_t i = 0; i < numBlockVirtical; ++i) {
 		for (uint32_t j = 0; j < numBlockHorizontal; ++j) {
-			if (mapChipField_->GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+			MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(j, i);
+			
+			if (chipType == MapChipType::kBlock) {
 
 				WorldTransform* worldTransform = new WorldTransform();
 				worldTransform->Initialize();
 				worldTransformBlocks_[i][j] = worldTransform;
 				worldTransformBlocks_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+			}
+			else if (chipType == MapChipType::kSwingPoint) {
+				
+				WorldTransform* worldTransform = new WorldTransform();
+				worldTransform->Initialize();
+				worldTransformSwingPoints_[i][j] = worldTransform;
+				worldTransformSwingPoints_[i][j]->translation_ = mapChipField_->GetMapChipPositionByIndex(j, i);
+				worldTransformSwingPoints_[i][j]->scale_ = {0.3f, 0.3f, 0.3f};  // Make swing points smaller
 			}
 		}
 	}
