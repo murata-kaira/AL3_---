@@ -29,7 +29,10 @@ public:
 	bool IsDead() const { return isDead_; }
 
 	bool IsSwinging() const { return isSwinging_; }
+	bool IsShootingWire() const { return isShootingWire_; }
 	const KamataEngine::Vector3& GetSwingPoint() const { return swingPoint_; }
+	const KamataEngine::Vector3& GetWireDirection() const { return wireDirection_; }
+	float GetWireExtension() const { return wireExtension_; }
 
 
 private:
@@ -85,9 +88,12 @@ private:
 
 	bool isDead_ = false;
 
-	// Swing mechanic variables
+	// Wire/grappling hook mechanic variables
 	bool isSwinging_ = false;
+	bool isShootingWire_ = false;
 	KamataEngine::Vector3 swingPoint_ = {};
+	KamataEngine::Vector3 wireDirection_ = {};
+	float wireExtension_ = 0.0f;
 	float swingAngle_ = 0.0f;
 	float swingAngularVelocity_ = 0.0f;
 	float ropeLength_ = 0.0f;
@@ -95,12 +101,14 @@ private:
 	static inline const float kSwingGravity = 0.05f;
 	static inline const float kSwingDamping = 0.99f;
 	static inline const float kSwingInputForce = 0.01f;
-	static inline const float kMaxRopeLength = 5.0f;
+	static inline const float kMaxRopeLength = 10.0f;
+	static inline const float kWireShootSpeed = 0.5f;
 	static inline const float kSwingReleaseBoost = 1.5f;
 
 	void InputMove();
 
-	void CheckSwingPoints();
+	void ShootWire();
+	void UpdateWireExtension();
 	void UpdateSwingPhysics();
 	void ReleaseSwing();
 

@@ -25,11 +25,12 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 
 void Player::Update() {
 
-	CheckSwingPoints();
-
-	if (isSwinging_) {
+	if (isShootingWire_) {
+		UpdateWireExtension();
+	} else if (isSwinging_) {
 		UpdateSwingPhysics();
 	} else {
+		ShootWire();
 		InputMove();
 
 		CollisionMapInfo collisionMapInfo;
@@ -392,52 +393,78 @@ KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center
 	return center + offsetTable[static_cast<uint32_t>(corner)];
 }
 
-void Player::CheckSwingPoints() {
-	// Check if player presses space to grab a rope
-	if (!isSwinging_ && Input::GetInstance()->TriggerKey(DIK_SPACE) && !onGround_) {
-		// Search for nearby swing points
-		Vector3 playerPos = worldTransform_.translation_;
-		
-		// Check surrounding blocks for swing points
-		for (int dy = -2; dy <= 2; ++dy) {
-			for (int dx = -2; dx <= 2; ++dx) {
-				MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(playerPos);
-				int checkX = indexSet.xIndex + dx;
-				int checkY = indexSet.yIndex + dy;
-				
-				if (checkX >= 0 && checkX < static_cast<int>(mapChipField_->GetNumBlockHorizontal()) &&
-				    checkY >= 0 && checkY < static_cast<int>(mapChipField_->GetNumBlockVirtical())) {
-					
-					MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(checkX, checkY);
-					if (chipType == MapChipType::kSwingPoint) {
-						Vector3 swingPos = mapChipField_->GetMapChipPositionByIndex(checkX, checkY);
-						float distance = std::sqrt(
-						    (swingPos.x - playerPos.x) * (swingPos.x - playerPos.x) +
-						    (swingPos.y - playerPos.y) * (swingPos.y - playerPos.y)
-						);
-						
-						if (distance <= kMaxRopeLength) {
-							// Grab the rope
-							isSwinging_ = true;
-							swingPoint_ = swingPos;
-							ropeLength_ = distance;
-							onGround_ = false;
-							
-							// Calculate initial swing angle
-							Vector3 toPlayer = playerPos - swingPos;
-							swingAngle_ = std::atan2(toPlayer.x, -toPlayer.y);
-							swingAngularVelocity_ = velocity_.x * 0.3f; // Convert horizontal velocity to angular
-							return;
-						}
-					}
-				}
-			}
-		}
+void Player::ShootWire() {
+	// Release swing with space
+	if (isSwinging_ && Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		ReleaseSwing();
+		return;
 	}
 	
-	// Release rope with space or when hitting ground
-	if (isSwinging_ && (Input::GetInstance()->TriggerKey(DIK_SPACE) || onGround_)) {
-		ReleaseSwing();
+	// Shoot wire when space is pressed and not on ground
+	if (!isSwinging_ && !isShootingWire_ && Input::GetInstance()->TriggerKey(DIK_SPACE) && !onGround_) {
+		Vector3 playerPos = worldTransform_.translation_;
+		
+		// Determine wire direction based on player's facing direction and velocity
+		wireDirection_ = Vector3(0, 0, 0);
+		
+		// Default: shoot upward and in the direction the player is facing
+		if (lrDirection_ == LRDirection::kRight) {
+			wireDirection_.x = 0.7f;  // Shoot diagonally up-right
+		} else {
+			wireDirection_.x = -0.7f; // Shoot diagonally up-left
+		}
+		wireDirection_.y = 1.0f;      // Always shoot upward
+		
+		// Normalize the direction
+		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
+		wireDirection_.x /= length;
+		wireDirection_.y /= length;
+		
+		isShootingWire_ = true;
+		wireExtension_ = 0.0f;
+	}
+}
+
+void Player::UpdateWireExtension() {
+	Vector3 playerPos = worldTransform_.translation_;
+	
+	// Extend the wire
+	wireExtension_ += kWireShootSpeed;
+	
+	// Check if wire has extended too far
+	if (wireExtension_ > kMaxRopeLength) {
+		isShootingWire_ = false;
+		return;
+	}
+	
+	// Calculate current wire tip position
+	Vector3 wireTip = playerPos + wireDirection_ * wireExtension_;
+	
+	// Check if wire tip hits a block or swing point
+	MapChipField::IndexSet indexSet = mapChipField_->GetMapChipIndexSetByPosition(wireTip);
+	
+	if (indexSet.xIndex >= 0 && indexSet.xIndex < mapChipField_->GetNumBlockHorizontal() &&
+	    indexSet.yIndex >= 0 && indexSet.yIndex < mapChipField_->GetNumBlockVirtical()) {
+		
+		MapChipType chipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+		
+		// Attach to blocks or swing points
+		if (chipType == MapChipType::kBlock || chipType == MapChipType::kSwingPoint) {
+			// Get the position of the block/swing point
+			Vector3 attachPos = mapChipField_->GetMapChipPositionByIndex(indexSet.xIndex, indexSet.yIndex);
+			
+			// Attach the wire
+			isShootingWire_ = false;
+			isSwinging_ = true;
+			swingPoint_ = attachPos;
+			ropeLength_ = wireExtension_;
+			onGround_ = false;
+			
+			// Calculate initial swing angle
+			Vector3 toPlayer = playerPos - attachPos;
+			swingAngle_ = std::atan2(toPlayer.x, -toPlayer.y);
+			swingAngularVelocity_ = velocity_.x * 0.3f; // Convert horizontal velocity to angular
+		}
 	}
 }
 
@@ -465,6 +492,18 @@ void Player::UpdateSwingPhysics() {
 	// Update velocity for when released
 	velocity_.x = swingAngularVelocity_ * ropeLength_ * std::cos(swingAngle_);
 	velocity_.y = swingAngularVelocity_ * ropeLength_ * std::sin(swingAngle_);
+	
+	// Check for collision with ground
+	CollisionMapInfo collisionMapInfo;
+	collisionMapInfo.move = Vector3(0, 0, 0);
+	CheckMapCollisionDown(collisionMapInfo);
+	
+	// Release if landing on ground
+	if (collisionMapInfo.landing) {
+		ReleaseSwing();
+		onGround_ = true;
+		velocity_.y = 0.0f;
+	}
 }
 
 void Player::ReleaseSwing() {
