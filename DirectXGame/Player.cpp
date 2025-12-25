@@ -409,11 +409,11 @@ void Player::ShootWire() {
 		
 		// Default: shoot upward and in the direction the player is facing
 		if (lrDirection_ == LRDirection::kRight) {
-			wireDirection_.x = 0.7f;  // Shoot diagonally up-right
+			wireDirection_.x = kWireDiagonalRatio;  // Shoot diagonally up-right
 		} else {
-			wireDirection_.x = -0.7f; // Shoot diagonally up-left
+			wireDirection_.x = -kWireDiagonalRatio; // Shoot diagonally up-left
 		}
-		wireDirection_.y = 1.0f;      // Always shoot upward
+		wireDirection_.y = kWireVerticalRatio;      // Always shoot upward
 		
 		// Normalize the direction
 		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
@@ -493,9 +493,10 @@ void Player::UpdateSwingPhysics() {
 	velocity_.x = swingAngularVelocity_ * ropeLength_ * std::cos(swingAngle_);
 	velocity_.y = swingAngularVelocity_ * ropeLength_ * std::sin(swingAngle_);
 	
-	// Check for collision with ground
+	// Check for collision with ground by testing small downward movement
+	Vector3 testMove = Vector3(0, -kGroundSearchHeight, 0);
 	CollisionMapInfo collisionMapInfo;
-	collisionMapInfo.move = Vector3(0, 0, 0);
+	collisionMapInfo.move = testMove;
 	CheckMapCollisionDown(collisionMapInfo);
 	
 	// Release if landing on ground

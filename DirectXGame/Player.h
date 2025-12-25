@@ -103,6 +103,8 @@ private:
 	static inline const float kSwingInputForce = 0.01f;
 	static inline const float kMaxRopeLength = 10.0f;
 	static inline const float kWireShootSpeed = 0.5f;
+	static inline const float kWireDiagonalRatio = 0.7f;
+	static inline const float kWireVerticalRatio = 1.0f;
 	static inline const float kSwingReleaseBoost = 1.5f;
 
 	void InputMove();
