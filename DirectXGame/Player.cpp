@@ -394,12 +394,6 @@ KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center
 }
 
 void Player::ShootWire() {
-	// Release swing with space
-	if (isSwinging_ && Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		ReleaseSwing();
-		return;
-	}
-	
 	// Shoot wire when space is pressed and not on ground
 	if (!isSwinging_ && !isShootingWire_ && Input::GetInstance()->TriggerKey(DIK_SPACE) && !onGround_) {
 		Vector3 playerPos = worldTransform_.translation_;
@@ -469,6 +463,12 @@ void Player::UpdateWireExtension() {
 }
 
 void Player::UpdateSwingPhysics() {
+	// Check for manual release with space key
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		ReleaseSwing();
+		return;
+	}
+	
 	// Pendulum physics
 	float gravity = kSwingGravity;
 	float angularAcceleration = -gravity * std::sin(swingAngle_) / ropeLength_;
