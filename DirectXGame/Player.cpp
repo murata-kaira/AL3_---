@@ -396,23 +396,7 @@ KamataEngine::Vector3 Player::CornerPosition(const KamataEngine::Vector3& center
 void Player::ShootWire() {
 	// Shoot wire when space is pressed and not on ground
 	if (!isSwinging_ && !isShootingWire_ && Input::GetInstance()->TriggerKey(DIK_SPACE) && !onGround_) {
-		Vector3 playerPos = worldTransform_.translation_;
-		
-		// Determine wire direction based on player's facing direction and velocity
-		wireDirection_ = Vector3(0, 0, 0);
-		
-		// Default: shoot upward and in the direction the player is facing
-		if (lrDirection_ == LRDirection::kRight) {
-			wireDirection_.x = kWireDiagonalRatio;  // Shoot diagonally up-right
-		} else {
-			wireDirection_.x = -kWireDiagonalRatio; // Shoot diagonally up-left
-		}
-		wireDirection_.y = kWireVerticalRatio;      // Always shoot upward
-		
-		// Normalize the direction
-		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
-		wireDirection_.x /= length;
-		wireDirection_.y /= length;
+		CalculateWireDirection();
 		
 		isShootingWire_ = true;
 		wireExtension_ = 0.0f;
@@ -423,22 +407,7 @@ void Player::UpdateWireExtension() {
 	// Check for canceling current wire and shooting a new one
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		// Cancel current wire and shoot new one
-		Vector3 playerPos = worldTransform_.translation_;
-		wireDirection_ = Vector3(0, 0, 0);
-		
-		// Shoot in the direction player is facing
-		if (lrDirection_ == LRDirection::kRight) {
-			wireDirection_.x = kWireDiagonalRatio;
-		} else {
-			wireDirection_.x = -kWireDiagonalRatio;
-		}
-		wireDirection_.y = kWireVerticalRatio;
-		
-		// Normalize the direction
-		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
-		wireDirection_.x /= length;
-		wireDirection_.y /= length;
-		
+		CalculateWireDirection();
 		wireExtension_ = 0.0f;  // Reset extension to start fresh
 		return;
 	}
@@ -492,22 +461,7 @@ void Player::UpdateSwingPhysics() {
 		ReleaseSwing();
 		
 		// Start shooting new wire immediately
-		Vector3 playerPos = worldTransform_.translation_;
-		wireDirection_ = Vector3(0, 0, 0);
-		
-		// Shoot in the direction player is facing
-		if (lrDirection_ == LRDirection::kRight) {
-			wireDirection_.x = kWireDiagonalRatio;
-		} else {
-			wireDirection_.x = -kWireDiagonalRatio;
-		}
-		wireDirection_.y = kWireVerticalRatio;
-		
-		// Normalize the direction
-		float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
-		wireDirection_.x /= length;
-		wireDirection_.y /= length;
-		
+		CalculateWireDirection();
 		isShootingWire_ = true;
 		wireExtension_ = 0.0f;
 		return;
@@ -561,4 +515,21 @@ void Player::ReleaseSwing() {
 	// Clamp to reasonable values
 	velocity_.x = std::clamp(velocity_.x, -2.0f, 2.0f);
 	velocity_.y = std::clamp(velocity_.y, -2.0f, 2.0f);
+}
+
+void Player::CalculateWireDirection() {
+	wireDirection_ = Vector3(0, 0, 0);
+	
+	// Shoot in the direction player is facing
+	if (lrDirection_ == LRDirection::kRight) {
+		wireDirection_.x = kWireDiagonalRatio;
+	} else {
+		wireDirection_.x = -kWireDiagonalRatio;
+	}
+	wireDirection_.y = kWireVerticalRatio;
+	
+	// Normalize the direction
+	float length = std::sqrt(wireDirection_.x * wireDirection_.x + wireDirection_.y * wireDirection_.y);
+	wireDirection_.x /= length;
+	wireDirection_.y /= length;
 }

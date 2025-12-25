@@ -113,6 +113,7 @@ private:
 	void UpdateWireExtension();
 	void UpdateSwingPhysics();
 	void ReleaseSwing();
+	void CalculateWireDirection();
 
 	void CheckMapCollision(CollisionMapInfo& info);
 
