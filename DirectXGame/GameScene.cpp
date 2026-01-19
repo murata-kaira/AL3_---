@@ -12,6 +12,8 @@ GameScene::~GameScene() {
 	delete modelPlayer_;
 	delete mapChipField_;
 	delete modelEnemy_;
+	delete modelGolf_;
+	delete golf_;
 
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -35,6 +37,8 @@ void GameScene::Initialize() {
 	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
+
+	modelGolf_ = Model::CreateFromOBJ("block", true); // Reuse block model for golf ball
 
 	debugCamera_ = new DebugCamera(1280, 720);
 
@@ -69,6 +73,16 @@ void GameScene::Initialize() {
 	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
 	cameraController_->SetMovableArea(cameraArea);
 
+	// Initialize golf ball
+	golf_ = new Golf();
+	Vector3 golfPosition = mapChipField_->GetMapChipPositionByIndex(15, 18);
+	golfPosition.y += 2.0f; // Start above ground
+	golf_->Initialize(modelGolf_, &camera_, golfPosition);
+	
+	// Set goal position
+	Vector3 goalPosition = mapChipField_->GetMapChipPositionByIndex(80, 18);
+	golf_->SetGoalPosition(goalPosition);
+
 	worldTransform_.Initialize();
 
 	camera_.Initialize();
@@ -81,6 +95,10 @@ void GameScene::Update() {
 	player_->Update();
 	debugCamera_->Update();
 	cameraController_->Update();
+
+	if (golf_) {
+		golf_->Update();
+	}
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
@@ -126,6 +144,10 @@ void GameScene::Draw() {
 	player_->Draw();
 
 	skydome_->Draw();
+
+	if (golf_) {
+		golf_->Draw();
+	}
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
@@ -178,6 +200,14 @@ void GameScene::CheckAllCollisions() {
 			player_->OnCollision(enemy);
 
 			enemy->OnCollision(player_);
+		}
+	}
+
+	// Check collision between player and golf ball
+	if (golf_ && !golf_->IsInHole()) {
+		aabb2 = golf_->GetAABB();
+		if (IsCollision(aabb1, aabb2)) {
+			golf_->OnCollision(player_);
 		}
 	}
 	#pragma endregion
