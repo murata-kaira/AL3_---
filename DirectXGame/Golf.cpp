@@ -24,12 +24,26 @@ void Golf::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, 
 	velocity_ = {0, 0, 0};
 
 	isInHole_ = false;
+
+	isCharging_ = false;
+
+	chargePower_ = 0.0f;
+
+	shotCount_ = 0;
+
+	lastShotDistance_ = 0.0f;
+
+	shotStartPosition_ = position;
 }
 
 void Golf::Update() {
 
 	if (isInHole_) {
 		return;
+	}
+
+	if (isCharging_) {
+		UpdateCharging();
 	}
 
 	ApplyPhysics();
@@ -48,6 +62,13 @@ void Golf::ApplyPhysics() {
 
 	// Apply velocity
 	worldTransform_.translation_ += velocity_;
+
+	// Calculate distance traveled (only horizontal distance)
+	if (shotCount_ > 0) {
+		float dx = worldTransform_.translation_.x - shotStartPosition_.x;
+		float dz = worldTransform_.translation_.z - shotStartPosition_.z;
+		lastShotDistance_ = std::sqrt(dx * dx + dz * dz);
+	}
 
 	// Ground collision
 	if (worldTransform_.translation_.y - kBallRadius <= kGroundHeight) {
@@ -110,7 +131,22 @@ AABB Golf::GetAABB() {
 	return aabb;
 }
 
-void Golf::Hit(const Player* player) { 
+void Golf::StartCharging() {
+	if (!isCharging_ && std::abs(velocity_.x) < 0.01f && std::abs(velocity_.y) < 0.01f && std::abs(velocity_.z) < 0.01f) {
+		isCharging_ = true;
+		chargePower_ = kMinPower;
+	}
+}
+
+void Golf::UpdateCharging() {
+	// Oscillate power between min and max
+	chargePower_ += kChargeSpeed;
+	if (chargePower_ > kMaxPower) {
+		chargePower_ = kMinPower;
+	}
+}
+
+void Golf::Hit(const Player* player, float power) { 
 	// Calculate direction from player to ball
 	Vector3 playerPos = player->GetWorldPosition();
 	Vector3 ballPos = GetWorldPosition();
@@ -127,10 +163,19 @@ void Golf::Hit(const Player* player) {
 		direction.x /= length;
 		direction.z /= length;
 		
-		// Apply hit force - increased power for better visibility
-		float hitPower = 1.2f;
-		velocity_.x = direction.x * hitPower;
-		velocity_.y = 0.4f; // Add upward velocity
-		velocity_.z = direction.z * hitPower;
+		// Store start position for distance calculation
+		shotStartPosition_ = worldTransform_.translation_;
+		
+		// Apply hit force with power
+		velocity_.x = direction.x * power;
+		velocity_.y = 0.4f * (power / kMaxPower); // Scale upward velocity with power
+		velocity_.z = direction.z * power;
+		
+		// Increment shot counter
+		shotCount_++;
+		
+		// Reset charging
+		isCharging_ = false;
+		chargePower_ = 0.0f;
 	}
 }

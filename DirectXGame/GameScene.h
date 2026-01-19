@@ -51,6 +51,8 @@ public:
 
 	void Draw();
 
+	void DrawUI();
+
 	void GenerateBlocks();
 
 	void CheckAllCollisions();

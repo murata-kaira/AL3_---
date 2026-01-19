@@ -161,6 +161,47 @@ void GameScene::Draw() {
 		}
 	}
 	Model::PostDraw();
+
+	// Draw UI elements
+	DrawUI();
+}
+
+void GameScene::DrawUI() {
+	// Draw shot counter
+	if (golf_) {
+		char shotText[64];
+		sprintf_s(shotText, "SHOTS: %d", golf_->GetShotCount());
+		DebugText::GetInstance()->Print(shotText, 20, 20, 2.0f);
+
+		// Draw distance if a shot has been taken
+		if (golf_->GetShotCount() > 0) {
+			char distText[64];
+			sprintf_s(distText, "DISTANCE: %.1f", golf_->GetLastShotDistance());
+			DebugText::GetInstance()->Print(distText, 20, 50, 2.0f);
+		}
+
+		// Draw power meter when charging
+		if (golf_->IsCharging()) {
+			float power = golf_->GetChargePower();
+			char powerText[64];
+			sprintf_s(powerText, "POWER: %.1f", power);
+			DebugText::GetInstance()->Print(powerText, 20, 80, 2.0f);
+
+			// Draw power bar
+			int barWidth = static_cast<int>(power / 2.0f * 200.0f);  // Max 200 pixels
+			for (int i = 0; i < barWidth; i += 10) {
+				DebugText::GetInstance()->Print("=", 20 + i, 110, 2.0f);
+			}
+		}
+
+		// Draw direction indicator when near ball
+		AABB playerAABB = player_->GetAABB();
+		AABB ballAABB = golf_->GetAABB();
+		if (IsCollision(playerAABB, ballAABB)) {
+			DebugText::GetInstance()->Print("< HIT >", 20, 140, 2.0f);
+			DebugText::GetInstance()->Print("Hold SPACE to charge power", 20, 170, 1.5f);
+		}
+	}
 }
 
 void GameScene::GenerateBlocks() {
@@ -207,9 +248,13 @@ void GameScene::CheckAllCollisions() {
 	if (golf_ && !golf_->IsInHole()) {
 		aabb2 = golf_->GetAABB();
 		if (IsCollision(aabb1, aabb2)) {
-			// Hit the ball only when space key is pressed
-			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-				golf_->Hit(player_);
+			// Start charging when space key is pressed
+			if (Input::GetInstance()->TriggerKey(DIK_SPACE) && !golf_->IsCharging()) {
+				golf_->StartCharging();
+			}
+			// Release to hit with charged power
+			else if (!Input::GetInstance()->PushKey(DIK_SPACE) && golf_->IsCharging()) {
+				golf_->Hit(player_, golf_->GetChargePower());
 			}
 		}
 	}

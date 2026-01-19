@@ -14,13 +14,23 @@ public:
 
 	AABB GetAABB();
 
-	void Hit(const Player* player);
+	void StartCharging();
+	
+	void Hit(const Player* player, float power);
 
 	KamataEngine::Vector3 GetWorldPosition();
 
 	bool IsInHole() const { return isInHole_; }
 
 	void SetGoalPosition(const KamataEngine::Vector3& goalPosition) { goalPosition_ = goalPosition; }
+
+	bool IsCharging() const { return isCharging_; }
+
+	float GetChargePower() const { return chargePower_; }
+
+	int GetShotCount() const { return shotCount_; }
+
+	float GetLastShotDistance() const { return lastShotDistance_; }
 
 private:
 	KamataEngine::WorldTransform worldTransform_;
@@ -35,6 +45,16 @@ private:
 
 	bool isInHole_ = false;
 
+	bool isCharging_ = false;
+
+	float chargePower_ = 0.0f;
+
+	int shotCount_ = 0;
+
+	float lastShotDistance_ = 0.0f;
+
+	KamataEngine::Vector3 shotStartPosition_ = {};
+
 	static inline const float kGravityAcceleration = 0.05f;
 
 	static inline const float kFriction = 0.98f;
@@ -47,7 +67,15 @@ private:
 
 	static inline const float kBounceDamping = 0.6f;
 
+	static inline const float kChargeSpeed = 0.02f;
+
+	static inline const float kMaxPower = 2.0f;
+
+	static inline const float kMinPower = 0.3f;
+
 	void ApplyPhysics();
 
 	void CheckGoal();
+
+	void UpdateCharging();
 };
