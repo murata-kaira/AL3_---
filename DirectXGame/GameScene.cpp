@@ -167,6 +167,10 @@ void GameScene::Draw() {
 }
 
 void GameScene::DrawUI() {
+	// UI drawing constants
+	constexpr int kPowerBarMaxWidth = 200;
+	constexpr int kPowerBarSegmentSpacing = 10;
+
 	// Draw shot counter
 	if (golf_) {
 		char shotText[64];
@@ -188,8 +192,8 @@ void GameScene::DrawUI() {
 			DebugText::GetInstance()->Print(powerText, 20, 80, 2.0f);
 
 			// Draw power bar - use kMaxPower constant instead of magic number
-			int barWidth = static_cast<int>((power / Golf::kMaxPower) * 200.0f);  // Max 200 pixels
-			for (int i = 0; i < barWidth; i += 10) {
+			int barWidth = static_cast<int>((power / Golf::kMaxPower) * kPowerBarMaxWidth);
+			for (int i = 0; i < barWidth; i += kPowerBarSegmentSpacing) {
 				DebugText::GetInstance()->Print("=", 20 + i, 110, 2.0f);
 			}
 		}

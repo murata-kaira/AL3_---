@@ -69,6 +69,8 @@ private:
 
 	static inline const float kBounceDamping = 0.6f;
 
+	static inline const float kUpwardVelocityBase = 0.4f;
+
 	static inline const float kChargeSpeed = 0.02f;
 
 	static inline const float kMinPower = 0.3f;

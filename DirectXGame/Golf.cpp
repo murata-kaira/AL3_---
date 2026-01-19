@@ -180,7 +180,7 @@ void Golf::Hit(const Player* player, float power) {
 		
 		// Apply hit force with power
 		velocity_.x = direction.x * power;
-		velocity_.y = 0.4f * (power / kMaxPower); // Scale upward velocity with power
+		velocity_.y = kUpwardVelocityBase * (power / kMaxPower); // Scale upward velocity with power
 		velocity_.z = direction.z * power;
 		
 		// Increment shot counter
