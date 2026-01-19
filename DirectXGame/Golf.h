@@ -37,9 +37,9 @@ private:
 
 	static inline const float kGravityAcceleration = 0.05f;
 
-	static inline const float kFriction = 0.95f;
+	static inline const float kFriction = 0.98f;
 
-	static inline const float kBallRadius = 0.3f;
+	static inline const float kBallRadius = 0.5f;
 
 	static inline const float kGoalRadius = 0.5f;
 

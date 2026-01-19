@@ -127,10 +127,10 @@ void Golf::OnCollision(const Player* player) {
 		direction.x /= length;
 		direction.z /= length;
 		
-		// Apply hit force
-		float hitPower = 0.5f;
+		// Apply hit force - increased power for better visibility
+		float hitPower = 1.2f;
 		velocity_.x = direction.x * hitPower;
-		velocity_.y = 0.3f; // Add upward velocity
+		velocity_.y = 0.4f; // Add upward velocity
 		velocity_.z = direction.z * hitPower;
 	}
 }
