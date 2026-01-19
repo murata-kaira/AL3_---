@@ -34,6 +34,8 @@ void Golf::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, 
 	lastShotDistance_ = 0.0f;
 
 	shotStartPosition_ = position;
+
+	chargingUp_ = true;
 }
 
 void Golf::Update() {
@@ -135,14 +137,24 @@ void Golf::StartCharging() {
 	if (!isCharging_ && std::abs(velocity_.x) < 0.01f && std::abs(velocity_.y) < 0.01f && std::abs(velocity_.z) < 0.01f) {
 		isCharging_ = true;
 		chargePower_ = kMinPower;
+		chargingUp_ = true;
 	}
 }
 
 void Golf::UpdateCharging() {
-	// Oscillate power between min and max
-	chargePower_ += kChargeSpeed;
-	if (chargePower_ > kMaxPower) {
-		chargePower_ = kMinPower;
+	// Oscillate power smoothly between min and max
+	if (chargingUp_) {
+		chargePower_ += kChargeSpeed;
+		if (chargePower_ >= kMaxPower) {
+			chargePower_ = kMaxPower;
+			chargingUp_ = false;
+		}
+	} else {
+		chargePower_ -= kChargeSpeed;
+		if (chargePower_ <= kMinPower) {
+			chargePower_ = kMinPower;
+			chargingUp_ = true;
+		}
 	}
 }
 

@@ -32,6 +32,8 @@ public:
 
 	float GetLastShotDistance() const { return lastShotDistance_; }
 
+	static constexpr float kMaxPower = 2.0f;
+
 private:
 	KamataEngine::WorldTransform worldTransform_;
 
@@ -69,9 +71,9 @@ private:
 
 	static inline const float kChargeSpeed = 0.02f;
 
-	static inline const float kMaxPower = 2.0f;
-
 	static inline const float kMinPower = 0.3f;
+
+	bool chargingUp_ = true;
 
 	void ApplyPhysics();
 

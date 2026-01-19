@@ -187,8 +187,8 @@ void GameScene::DrawUI() {
 			sprintf_s(powerText, "POWER: %.1f", power);
 			DebugText::GetInstance()->Print(powerText, 20, 80, 2.0f);
 
-			// Draw power bar
-			int barWidth = static_cast<int>(power / 2.0f * 200.0f);  // Max 200 pixels
+			// Draw power bar - use kMaxPower constant instead of magic number
+			int barWidth = static_cast<int>((power / Golf::kMaxPower) * 200.0f);  // Max 200 pixels
 			for (int i = 0; i < barWidth; i += 10) {
 				DebugText::GetInstance()->Print("=", 20 + i, 110, 2.0f);
 			}
