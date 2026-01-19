@@ -43,7 +43,7 @@ private:
 
 	static inline const float kGoalRadius = 0.5f;
 
-	static inline const float kGroundHeight = 0.0f;
+	static inline const float kGroundHeight = 1.0f;
 
 	static inline const float kBounceDamping = 0.6f;
 
