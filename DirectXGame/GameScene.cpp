@@ -207,7 +207,10 @@ void GameScene::CheckAllCollisions() {
 	if (golf_ && !golf_->IsInHole()) {
 		aabb2 = golf_->GetAABB();
 		if (IsCollision(aabb1, aabb2)) {
-			golf_->OnCollision(player_);
+			// Hit the ball only when space key is pressed
+			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+				golf_->Hit(player_);
+			}
 		}
 	}
 	#pragma endregion

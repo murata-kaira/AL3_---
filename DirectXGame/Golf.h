@@ -14,7 +14,7 @@ public:
 
 	AABB GetAABB();
 
-	void OnCollision(const Player* player);
+	void Hit(const Player* player);
 
 	KamataEngine::Vector3 GetWorldPosition();
 

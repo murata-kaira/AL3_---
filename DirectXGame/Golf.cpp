@@ -110,7 +110,7 @@ AABB Golf::GetAABB() {
 	return aabb;
 }
 
-void Golf::OnCollision(const Player* player) { 
+void Golf::Hit(const Player* player) { 
 	// Calculate direction from player to ball
 	Vector3 playerPos = player->GetWorldPosition();
 	Vector3 ballPos = GetWorldPosition();
