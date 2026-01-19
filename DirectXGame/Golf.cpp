@@ -95,13 +95,8 @@ void Golf::Draw() {
 }
 
 Vector3 Golf::GetWorldPosition() {
-
-	Vector3 worldPos;
-	worldPos.x = worldTransform_.matWorld_.m[3][0];
-	worldPos.y = worldTransform_.matWorld_.m[3][1];
-	worldPos.z = worldTransform_.matWorld_.m[3][2];
-
-	return worldPos;
+	// Return the translation directly since it's kept up-to-date
+	return worldTransform_.translation_;
 }
 
 AABB Golf::GetAABB() {
