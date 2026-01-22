@@ -251,15 +251,16 @@ void GameScene::CheckAllCollisions() {
 	// Check collision between player and golf ball
 	if (golf_ && !golf_->IsInHole()) {
 		aabb2 = golf_->GetAABB();
-		if (IsCollision(aabb1, aabb2)) {
-			// Start charging when space key is pressed
-			if (Input::GetInstance()->TriggerKey(DIK_SPACE) && !golf_->IsCharging()) {
-				golf_->StartCharging();
-			}
-			// Release to hit with charged power
-			else if (!Input::GetInstance()->PushKey(DIK_SPACE) && golf_->IsCharging()) {
-				golf_->Hit(player_, golf_->GetChargePower());
-			}
+		bool nearBall = IsCollision(aabb1, aabb2);
+		
+		// Start charging when space key is pressed while near ball
+		if (nearBall && Input::GetInstance()->TriggerKey(DIK_SPACE) && !golf_->IsCharging()) {
+			golf_->StartCharging();
+		}
+		
+		// Release to hit with charged power (can be done even if not touching ball anymore)
+		if (golf_->IsCharging() && !Input::GetInstance()->PushKey(DIK_SPACE)) {
+			golf_->Hit(player_, golf_->GetChargePower());
 		}
 	}
 	#pragma endregion
