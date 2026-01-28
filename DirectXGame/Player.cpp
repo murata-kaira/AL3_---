@@ -118,11 +118,11 @@ void Player::InputMove() {
 		}
 	}
 
-	// Jump logic - allow jumping if there are jumps remaining
+	// ジャンプ処理 - 残りジャンプ回数がある場合のみジャンプ可能
 	if (Input::GetInstance()->TriggerKey(DIK_UP)) {
 		if (jumpCount_ > 0) {
 			velocity_.y = kJumpAcceleration;
-			jumpCount_--;
+			jumpCount_--; // ジャンプ回数を減らす
 			onGround_ = false;
 		}
 	}
@@ -355,7 +355,7 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 
 			if (!hit) {
 				onGround_ = false;
-				// Walking off platform - allow only one more jump
+				// 足場から落ちた場合 - 空中ジャンプを1回のみ許可
 				jumpCount_ = 1;
 			}
 		}
@@ -366,7 +366,7 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 			onGround_ = true;
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			velocity_.y = 0.0f;
-			jumpCount_ = kMaxJumpCount; // Reset jump count when landing
+			jumpCount_ = kMaxJumpCount; // 着地時にジャンプ回数をリセット
 		}
 	}
 }
