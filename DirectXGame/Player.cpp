@@ -116,11 +116,18 @@ void Player::InputMove() {
 		} else {
 			velocity_.x *= (1.0f - kAttenuation);
 		}
-		if (Input::GetInstance()->PushKey(DIK_UP)) {
-			velocity_ += Vector3(0, kJumpAcceleration, 0);
-		}
+	}
 
-	} else {
+	// Jump logic - allow jumping if there are jumps remaining
+	if (Input::GetInstance()->TriggerKey(DIK_UP)) {
+		if (jumpCount_ > 0) {
+			velocity_.y = kJumpAcceleration;
+			jumpCount_--;
+			onGround_ = false;
+		}
+	}
+
+	if (!onGround_) {
 		velocity_ += Vector3(0, -kGravityAcceleration, 0);
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
@@ -357,6 +364,7 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 			onGround_ = true;
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			velocity_.y = 0.0f;
+			jumpCount_ = kMaxJumpCount; // Reset jump count when landing
 		}
 	}
 }

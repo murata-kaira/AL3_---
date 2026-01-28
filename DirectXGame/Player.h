@@ -63,6 +63,10 @@ private:
 
 	bool onGround_ = true;
 
+	// Double jump support
+	static inline const int kMaxJumpCount = 2;
+	int jumpCount_ = kMaxJumpCount;
+
 	enum class LRDirection {
 		kRight,
 		kLeft,
