@@ -355,6 +355,8 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 
 			if (!hit) {
 				onGround_ = false;
+				// Walking off platform - allow only one more jump
+				jumpCount_ = 1;
 			}
 		}
 
