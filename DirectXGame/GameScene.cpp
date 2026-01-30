@@ -70,7 +70,8 @@ void GameScene::Initialize() {
 	cameraController_->SetTarget(player_);
 	cameraController_->Reset();
 
-	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
+	// 強制スクロール対応: 右方向の制限を緩和（マップの幅いっぱいまで）
+	CameraController::Rect cameraArea = {12.0f, 100.0f, 6.0f, 6.0f};
 	cameraController_->SetMovableArea(cameraArea);
 
 	worldTransform_.Initialize();
