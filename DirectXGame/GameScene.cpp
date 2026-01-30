@@ -73,6 +73,10 @@ void GameScene::Initialize() {
 	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
 	cameraController_->SetMovableArea(cameraArea);
 
+	// 強制スクロールを有効化
+	cameraController_->SetForcedScroll(true);
+	cameraController_->SetScrollSpeed(0.05f);
+
 	worldTransform_.Initialize();
 
 	camera_.Initialize();
