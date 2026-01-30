@@ -1,6 +1,7 @@
 #include "DeathParticles.h"
 #include "MyMath.h"
 #include <algorithm>
+#include <cassert>
 
 
 using namespace KamataEngine;

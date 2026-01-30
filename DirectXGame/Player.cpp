@@ -83,9 +83,8 @@ AABB Player::GetAABB() {
 
 void Player::InputMove() {
 
-	if (onGround_) {
+		if (onGround_) {
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
-
 			Vector3 acceleration = {};
 			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
 				if (velocity_.x < 0.0f) {
@@ -97,12 +96,10 @@ void Player::InputMove() {
 					turnFirstRotationY_ = worldTransform_.rotation_.y;
 					turnTimer_ = kTimeTurn;
 				}
-
 			} else if (Input::GetInstance()->PushKey(DIK_LEFT)) {
 				if (velocity_.x > 0.0f) {
 					velocity_.x *= (1.0f - kAttenuation);
 				}
-
 				acceleration.x -= kAcceleration;
 				if (lrDirection_ != LRDirection::kLeft) {
 					lrDirection_ = LRDirection::kLeft;
@@ -111,15 +108,19 @@ void Player::InputMove() {
 				}
 			}
 			velocity_ += acceleration;
-
 			velocity_.x = std::clamp(velocity_.x, -kLimitRunSpeed, kLimitRunSpeed);
 		} else {
 			velocity_.x *= (1.0f - kAttenuation);
 		}
-		if (Input::GetInstance()->PushKey(DIK_UP)) {
-			velocity_ += Vector3(0, kJumpAcceleration, 0);
+	}
+	    // ジャンプ処理 - 残りジャンプ回数がある場合のみジャンプ可能
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		if (jumpCount_ > 0) {
+			velocity_.y = kJumpAcceleration;
+			jumpCount_--;
+			onGround_ = false;
 		}
-
+	
 	} else {
 		velocity_ += Vector3(0, -kGravityAcceleration, 0);
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
@@ -311,7 +312,8 @@ void Player::CheckMapCeiling(const CollisionMapInfo& info) {
 void Player::CheckMapWall(const CollisionMapInfo& info) {
 
 	if (info.hitWall) {
-		velocity_.x *= (1.0f - kAttenuationWall);
+		// 壁に当たったらプレイヤーを死亡状態にする
+		isDead_ = true;
 	}
 }
 
@@ -348,6 +350,8 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 
 			if (!hit) {
 				onGround_ = false;
+				// 足場から落ちた場合 - 空中ジャンプを1回のみ許可
+				jumpCount_ = 1;
 			}
 		}
 
@@ -357,6 +361,7 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 			onGround_ = true;
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			velocity_.y = 0.0f;
+			jumpCount_ = kMaxJumpCount;// 着地時にジャンプ回数をリセット
 		}
 	}
 }

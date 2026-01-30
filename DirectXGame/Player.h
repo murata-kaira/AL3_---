@@ -63,6 +63,12 @@ private:
 
 	bool onGround_ = true;
 
+
+	// 2段ジャンプ対応(回数制限無し)
+	static inline const int kMaxJumpCount = 10; // 最大ジャンプ回数
+	int jumpCount_ = kMaxJumpCount; // 残りジャンプ回数
+
+
 	enum class LRDirection {
 		kRight,
 		kLeft,
