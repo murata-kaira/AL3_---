@@ -45,4 +45,7 @@ private:
 	Rect targetMargin = {-9.0f, 9.0f, -5.0f, 5.0f};
 
 	Rect movableArea_ = {0, 100, 0, 100};
+
+	// 強制スクロール対応
+	static inline const float kAutoScrollSpeed = 0.05f; // 自動スクロール速度
 };

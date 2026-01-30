@@ -23,6 +23,9 @@ void CameraController::Update() {
 	camera_.translation_.x = min(camera_.translation_.x, camera_.translation_.x + targetMargin.right);
 	camera_.translation_.y = max(camera_.translation_.y, camera_.translation_.y + targetMargin.bottom);
 	camera_.translation_.y = min(camera_.translation_.y, camera_.translation_.y + targetMargin.top);
+	
+	// 強制スクロール - カメラを自動的に右方向へ移動
+	camera_.translation_.x += kAutoScrollSpeed;
 	 
 	camera_.translation_.x = max(camera_.translation_.x,movableArea_.left);
 	camera_.translation_.x = min(camera_.translation_.x, movableArea_.right);
