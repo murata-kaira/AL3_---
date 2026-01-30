@@ -71,6 +71,11 @@ Vector3 Player::GetWorldPosition() {
 	return worldPos;
 }
 
+void Player::ApplyScrollMovement(float scrollAmount) {
+	// 強制スクロールによってプレイヤーを移動
+	worldTransform_.translation_.x += scrollAmount;
+}
+
 AABB Player::GetAABB() {
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;

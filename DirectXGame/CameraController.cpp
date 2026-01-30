@@ -19,6 +19,8 @@ void CameraController::Update() {
 	if (isForcedScrollEnabled_) {
 		// カメラを自動的に右方向へスクロール
 		camera_.translation_.x += scrollSpeed_;
+		// プレイヤーも一緒にスクロール
+		target_->ApplyScrollMovement(scrollSpeed_);
 		// Y軸はプレイヤーに追従
 		camera_.translation_.y = Lerp(camera_.translation_.y, targetPosition_.y, kInterpolationRate);
 	} else {

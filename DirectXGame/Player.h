@@ -28,6 +28,8 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	// 強制スクロールによる移動を適用
+	void ApplyScrollMovement(float scrollAmount);
 
 private:
 	KamataEngine::WorldTransform worldTransform_;
