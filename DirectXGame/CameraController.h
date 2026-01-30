@@ -28,10 +28,12 @@ public:
 	// 強制スクロール設定
 	void SetForcedScroll(bool enable) { isForcedScrollEnabled_ = enable; }
 	void SetScrollSpeed(float speed) { 
-		// 負の値や極端に大きい値を防ぐ
+		// スクロール速度の範囲を制限 (0.0-1.0: ゲームのスケールに適した範囲)
+		// 負の値は逆スクロールを防ぐため、1.0以上は過度に速い動きを防ぐため制限
 		if (speed >= 0.0f && speed <= 1.0f) {
 			scrollSpeed_ = speed;
 		}
+		// 注: 無効な値は無視される（デフォルト値が維持される）
 	}
 
 private:
