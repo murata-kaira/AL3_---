@@ -18,6 +18,7 @@ void CameraController::Update() {
 	camera_.translation_ = targetWorldTransform.translation_ + target0ffset_;
 
 	camera_.translation_.x = Lerp(camera_.translation_.x, targetPosition_.x, kInterpolationRate);
+	camera_.translation_.y = Lerp(camera_.translation_.y, targetPosition_.y, kInterpolationRate);
 
 	camera_.translation_.x = max(camera_.translation_.x, camera_.translation_.x + targetMargin.left);
 	camera_.translation_.x = min(camera_.translation_.x, camera_.translation_.x + targetMargin.right);
