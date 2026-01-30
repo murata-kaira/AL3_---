@@ -74,6 +74,9 @@ Vector3 Player::GetWorldPosition() {
 void Player::ApplyScrollMovement(float scrollAmount) {
 	// 強制スクロールによってプレイヤーを移動
 	worldTransform_.translation_.x += scrollAmount;
+	// マトリックスを更新
+	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+	worldTransform_.TransferMatrix();
 }
 
 AABB Player::GetAABB() {
