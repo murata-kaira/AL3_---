@@ -75,7 +75,6 @@ void GameScene::Initialize() {
 
 	// 強制スクロールを有効化
 	cameraController_->SetForcedScroll(true);
-	cameraController_->SetScrollSpeed(0.05f);
 
 	worldTransform_.Initialize();
 

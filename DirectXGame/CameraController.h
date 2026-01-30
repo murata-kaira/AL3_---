@@ -27,7 +27,12 @@ public:
 
 	// 強制スクロール設定
 	void SetForcedScroll(bool enable) { isForcedScrollEnabled_ = enable; }
-	void SetScrollSpeed(float speed) { scrollSpeed_ = speed; }
+	void SetScrollSpeed(float speed) { 
+		// 負の値や極端に大きい値を防ぐ
+		if (speed >= 0.0f && speed <= 1.0f) {
+			scrollSpeed_ = speed;
+		}
+	}
 
 private:
 	KamataEngine::WorldTransform worldTransform_;
