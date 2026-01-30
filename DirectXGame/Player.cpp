@@ -318,7 +318,8 @@ void Player::CheckMapCeiling(const CollisionMapInfo& info) {
 void Player::CheckMapWall(const CollisionMapInfo& info) {
 
 	if (info.hitWall) {
-		velocity_.x *= (1.0f - kAttenuationWall);
+		// 壁に当たったらプレイヤーを死亡状態にする
+		isDead_ = true;
 	}
 }
 
