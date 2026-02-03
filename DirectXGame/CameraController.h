@@ -25,6 +25,17 @@ public:
 
 	const KamataEngine::Camera& GetViewProjection() const { return camera_; }
 
+	// 強制スクロール設定
+	void SetForcedScroll(bool enable) { isForcedScrollEnabled_ = enable; }
+	void SetScrollSpeed(float speed) {
+		// スクロール速度の範囲を制限 (0.0-1.0: ゲームのスケールに適した範囲)
+		// 負の値は逆スクロールを防ぐため、1.0以上は過度に速い動きを防ぐため制限
+		if (speed >= 0.0f && speed <= 1.0f) {
+			scrollSpeed_ = speed;
+		}
+	}
+
+
 private:
 	KamataEngine::WorldTransform worldTransform_;
 
@@ -45,4 +56,9 @@ private:
 	Rect targetMargin = {-9.0f, 9.0f, -5.0f, 5.0f};
 
 	Rect movableArea_ = {0, 100, 0, 100};
+
+	// 強制スクロール用パラメータ
+	bool isForcedScrollEnabled_ = false;
+	float scrollSpeed_ = 0.05f; // デフォルトのスクロール速度
+
 };

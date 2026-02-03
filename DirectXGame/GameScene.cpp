@@ -45,7 +45,7 @@ void GameScene::Initialize() {
 	mapChipField_ = new MapChipField;
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(1, 18);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
 
 	player_ = new Player();
 
@@ -58,7 +58,7 @@ void GameScene::Initialize() {
 
 	for (int32_t i = 0; i < 3; ++i) {
 		Enemy* newEnemy = new Enemy();
-		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(6 + i, 18);
+		Vector3 enemyPosition = mapChipField_->GetMapChipPositionByIndex(16 + i, 18);
 
 		newEnemy->Initialize(modelEnemy_, &camera_, enemyPosition);
 
@@ -72,6 +72,10 @@ void GameScene::Initialize() {
 
 	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
 	cameraController_->SetMovableArea(cameraArea);
+
+	// 強制スクロールを有効化
+	cameraController_->SetForcedScroll(true);
+
 
 	worldTransform_.Initialize();
 
@@ -223,6 +227,13 @@ void GameScene::ChangePhase() {
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialize(modelDeathParticles_, &camera_, deathParticlesPosition);
 		}
+
+		// クリア条件：プレイヤーがマップの右端付近（X座標95以上）に到達
+		Vector3 playerPos = player_->GetWorldPosition();
+		if (playerPos.x >= 95.0f) {
+			phase_ = Phase::kClear;
+			isGameClear_ = true;
+		}
 		break;
 	case Phase::kFadeIn:
 		if (fade_->IsFinished()) {
@@ -234,6 +245,11 @@ void GameScene::ChangePhase() {
 			phase_ = Phase::kFadeOut;
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 		}
+		break;
+	case Phase::kClear:
+		// クリアフェーズ：少し待ってからフェードアウト
+		fade_->Start(Fade::Status::FadeOut, 1.0f);
+		phase_ = Phase::kFadeOut;
 		break;
 	case Phase::kFadeOut:
 		if (fade_->IsFinished()) {

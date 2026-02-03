@@ -51,6 +51,7 @@ class GameScene {
 	enum class Phase {
 		kPlay,
 		kDeath,
+		kClear,
 		kFadeIn,
 		kFadeOut
 	};
@@ -58,6 +59,9 @@ class GameScene {
 	Phase phase_;
 
 	bool finished_ = false;
+
+	bool isGameClear_ = false;
+
 
 	Fade* fade_ = nullptr;
 
@@ -78,4 +82,6 @@ public:
 	void ChangePhase();
 
 	bool IsFnished() const { return finished_; }
+
+	bool IsGameClear() const { return isGameClear_; }
 };

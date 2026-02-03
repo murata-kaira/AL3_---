@@ -71,6 +71,16 @@ Vector3 Player::GetWorldPosition() {
 	return worldPos;
 }
 
+void Player::ApplyScrollMovement(float scrollAmount) {
+	// 強制スクロールによってプレイヤーを移動
+	worldTransform_.translation_.x += scrollAmount;
+
+	// マトリックスを更新
+	worldTransform_.matWorld_ = MakeAffineMatrix(worldTransform_.scale_, worldTransform_.rotation_, worldTransform_.translation_);
+	worldTransform_.TransferMatrix();
+
+}
+
 AABB Player::GetAABB() {
 	Vector3 worldPos = GetWorldPosition();
 	AABB aabb;
@@ -83,7 +93,7 @@ AABB Player::GetAABB() {
 
 void Player::InputMove() {
 
-		if (onGround_) {
+	if (onGround_) {
 		if (Input::GetInstance()->PushKey(DIK_RIGHT) || Input::GetInstance()->PushKey(DIK_LEFT)) {
 			Vector3 acceleration = {};
 			if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
@@ -113,14 +123,14 @@ void Player::InputMove() {
 			velocity_.x *= (1.0f - kAttenuation);
 		}
 	}
-	    // ジャンプ処理 - 残りジャンプ回数がある場合のみジャンプ可能
+	// ジャンプ処理 - 残りジャンプ回数がある場合のみジャンプ可能
 	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		if (jumpCount_ > 0) {
 			velocity_.y = kJumpAcceleration;
 			jumpCount_--;
 			onGround_ = false;
 		}
-	
+
 	} else {
 		velocity_ += Vector3(0, -kGravityAcceleration, 0);
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
@@ -222,9 +232,8 @@ void Player::CheckMapCollisionDown(CollisionMapInfo& info) {
 	}
 }
 void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
-	if (info.move.x <= 0) {
-		return;
-	}
+	// 壁に触れているかチェック（動いていなくても）
+	// Check if touching wall (even when not moving)
 
 	std::array<Vector3, kNumCorner> positionsNew;
 
@@ -255,16 +264,20 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0, 0));
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
+		// 右方向に移動している場合のみ位置を調整
+		// Only adjust position when moving right
+		if (info.move.x > 0) {
+			info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
+		}
 		info.hitWall = true;
 	}
 }
 
 void Player::CheckMapCollisionLeft(CollisionMapInfo& info) {
-	if (info.move.x >= 0) {
-		return;
-	}
+	// 壁に触れているかチェック（動いていなくても）
+	// Check if touching wall (even when not moving)
 
+	
 	std::array<Vector3, kNumCorner> positionsNew;
 
 	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -294,7 +307,11 @@ void Player::CheckMapCollisionLeft(CollisionMapInfo& info) {
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0, 0));
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = std::min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
+		// 左方向に移動している場合のみ位置を調整
+		// Only adjust position when moving left
+		if (info.move.x < 0) {
+			info.move.x = std::min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
+		}
 		info.hitWall = true;
 	}
 }
@@ -361,7 +378,7 @@ void Player::CheckMapLanding(const CollisionMapInfo& info) {
 			onGround_ = true;
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			velocity_.y = 0.0f;
-			jumpCount_ = kMaxJumpCount;// 着地時にジャンプ回数をリセット
+			jumpCount_ = kMaxJumpCount; // 着地時にジャンプ回数をリセット
 		}
 	}
 }

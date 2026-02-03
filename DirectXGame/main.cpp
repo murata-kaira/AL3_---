@@ -1,25 +1,31 @@
 #include "GameScene.h"
 #include "KamataEngine.h"
 #include "TitleScene.h"
+#include "GameOver.h"
+#include "ClearScene.h"
 #include <Windows.h>
 
 using namespace KamataEngine;
 
 GameScene* gameScene = nullptr;
 TitleScene* titleScene = nullptr;
+GameOverScene* gameOverScene = nullptr;
+ClearScene* clearScene = nullptr;
 
 
 enum class Scene {
 	kUnknown = 0,
 	kTitle,
 	kGame,
-
+	kGameOver,
+	kClear,
 };
 
 Scene scene = Scene::kUnknown;
 
 void ChangeScene() {
-	switch (scene) { case Scene::kTitle:
+	switch (scene) {
+	case Scene::kTitle:
 		if (titleScene->IsFinished()) {
 		
 			scene = Scene::kGame;
@@ -33,12 +39,37 @@ void ChangeScene() {
 		break;
 	case Scene::kGame:
 		if (gameScene->IsFnished()) {
-		
+			// ゲームクリアかゲームオーバーかを判定
+			if (gameScene->IsGameClear()) {
+				scene = Scene::kClear;
+				delete gameScene;
+				gameScene = nullptr;
+				clearScene = new ClearScene;
+				clearScene->Initialize();
+			} else {
+				scene = Scene::kGameOver;
+				delete gameScene;
+				gameScene = nullptr;
+				gameOverScene = new GameOverScene;
+				gameOverScene->Initialize();
+			}
+		}
+		break;
+	case Scene::kGameOver:
+		if (gameOverScene->IsFinished()) {
 			scene = Scene::kTitle;
-
-			delete gameScene;
-			gameScene = nullptr;
-
+			delete gameOverScene;
+			gameOverScene = nullptr;
+			titleScene = new TitleScene;
+			titleScene->Initialize();
+		}
+		break;
+	case Scene::kClear:
+		if (clearScene->IsFinished()) {
+			scene = Scene::kTitle;
+			delete clearScene;
+			clearScene = nullptr;
+			
 			titleScene = new TitleScene;
 			titleScene->Initialize();
 		}
@@ -55,6 +86,12 @@ void UpdateScene() {
 	case Scene::kGame:
 		gameScene->Update();
 		break;
+	case Scene::kGameOver:
+		gameOverScene->Update();
+		break;
+	case Scene::kClear:
+		clearScene->Update();
+		break;
 	}
 }
 
@@ -65,6 +102,12 @@ void DrawScene() {
 		break;
 	case Scene::kGame:
 		gameScene->Draw();
+		break;
+	case Scene::kGameOver:
+		gameOverScene->Draw();
+		break;
+	case Scene::kClear:
+		clearScene->Draw();
 		break;
 	}
 }
@@ -101,6 +144,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	delete gameScene;
 	delete titleScene;
+	delete gameOverScene;
+	delete clearScene;
 
 	KamataEngine::Finalize();
 

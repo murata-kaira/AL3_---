@@ -15,9 +15,21 @@ void CameraController::Update() {
 	const Vector3& targetVelocity = target_->GetVelocity();
 	targetPosition_ = targetWorldTransform.translation_ + targetVelocity * kVelocityBias;
 
-	camera_.translation_ = targetWorldTransform.translation_ + target0ffset_;
+		// 強制スクロールが有効な場合
+	if (isForcedScrollEnabled_) {
+		// カメラを自動的に右方向へスクロール
+		camera_.translation_.x += scrollSpeed_;
+		// プレイヤーも一緒にスクロール
+		target_->ApplyScrollMovement(scrollSpeed_);
+		// Y軸はプレイヤーに追従
+		camera_.translation_.y = Lerp(camera_.translation_.y, targetPosition_.y, kInterpolationRate);
+	} else {
+		// 通常のプレイヤー追従スクロール
+		camera_.translation_ = targetWorldTransform.translation_ + target0ffset_;
+		camera_.translation_.x = Lerp(camera_.translation_.x, targetPosition_.x, kInterpolationRate);
+		camera_.translation_.y = Lerp(camera_.translation_.y, targetPosition_.y, kInterpolationRate);
+	}
 
-	camera_.translation_.x = Lerp(camera_.translation_.x, targetPosition_.x, kInterpolationRate);
 
 	camera_.translation_.x = max(camera_.translation_.x, camera_.translation_.x + targetMargin.left);
 	camera_.translation_.x = min(camera_.translation_.x, camera_.translation_.x + targetMargin.right);

@@ -28,6 +28,9 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	// 強制スクロールによる移動を適用
+	void ApplyScrollMovement(float scrollAmount);
+
 
 private:
 	KamataEngine::WorldTransform worldTransform_;
@@ -42,20 +45,20 @@ private:
 
 	
 	
-
-	static inline const float kAcceleration = 1.0;
+	//加速度
+	static inline const float kAcceleration = 0.7f;
 
 	static inline const float kAttenuation = 0.5;
 
-	static inline const float kLimitRunSpeed = 0.5;
+	static inline const float kLimitRunSpeed = 0.35f;
 
 	static inline const float kTimeTurn = 0.3f;
 
 	static inline const float kGravityAcceleration = 0.1f;
 
 	static inline const float kLimitFallSpeed = 1.0;
-
-	static inline const float kJumpAcceleration = 1.0f;
+	//ジャンプ加速度
+	static inline const float kJumpAcceleration = 0.7f;
 
 	static inline const float kWidth = 0.8f;
 
@@ -65,7 +68,7 @@ private:
 
 
 	// 2段ジャンプ対応(回数制限無し)
-	static inline const int kMaxJumpCount = 10; // 最大ジャンプ回数
+	static inline const int kMaxJumpCount = 999; // 最大ジャンプ回数
 	int jumpCount_ = kMaxJumpCount; // 残りジャンプ回数
 
 
