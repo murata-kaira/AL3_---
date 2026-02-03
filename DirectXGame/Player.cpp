@@ -230,10 +230,9 @@ void Player::CheckMapCollisionDown(CollisionMapInfo& info) {
 	}
 }
 void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
-	if (info.move.x <= 0) {
-		return;
-	}
-
+	// 壁に触れているかチェック（動いていなくても）
+	// Check if touching wall (even when not moving)
+	
 	std::array<Vector3, kNumCorner> positionsNew;
 
 	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
@@ -263,15 +262,18 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(+kWidth / 2.0f, 0, 0));
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
+		// 右方向に移動している場合のみ位置を調整
+		// Only adjust position when moving right
+		if (info.move.x > 0) {
+			info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
+		}
 		info.hitWall = true;
 	}
 }
 
 void Player::CheckMapCollisionLeft(CollisionMapInfo& info) {
-	if (info.move.x >= 0) {
-		return;
-	}
+	// 壁に触れているかチェック（動いていなくても）
+	// Check if touching wall (even when not moving)
 
 	std::array<Vector3, kNumCorner> positionsNew;
 
@@ -302,7 +304,11 @@ void Player::CheckMapCollisionLeft(CollisionMapInfo& info) {
 	if (hit) {
 		indexSet = mapChipField_->GetMapChipIndexSetByPosition(worldTransform_.translation_ + info.move + Vector3(-kWidth / 2.0f, 0, 0));
 		MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
-		info.move.x = std::min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
+		// 左方向に移動している場合のみ位置を調整
+		// Only adjust position when moving left
+		if (info.move.x < 0) {
+			info.move.x = std::min(0.0f, rect.right - worldTransform_.translation_.x + (kWidth / 2.0f + kBlank));
+		}
 		info.hitWall = true;
 	}
 }
