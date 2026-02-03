@@ -145,6 +145,8 @@ void GameScene::Draw() {
 
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
+	fade_->Draw();
+
 	Model::PreDraw(dxCommon->GetCommandList());
 
 	player_->Draw();
@@ -167,8 +169,6 @@ void GameScene::Draw() {
 		}
 	}
 	Model::PostDraw();
-
-	fade_->Draw();
 }
 
 void GameScene::GenerateBlocks() {
