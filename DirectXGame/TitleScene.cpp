@@ -73,12 +73,12 @@ void TitleScene::Draw() {
 
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
+	fade_->Draw();
+
 	Model::PreDraw(dxCommon->GetCommandList());
 
 	model_->Draw(worldTransform_, camera_);
 	modelPlayer_->Draw(worldTransformPlayer_, camera_);
 
 	Model::PostDraw();
-
-	fade_->Draw();
 }

@@ -56,11 +56,11 @@ void ClearScene::Update() {
 }
 void ClearScene::Draw() {
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+	fade_->Draw();
 	Sprite::PreDraw(dxCommon->GetCommandList());
 	Model::PreDraw(dxCommon->GetCommandList());
 	sprite_->Draw();
 	modelPlayer_->Draw(worldTransformPlayer_, camera_);
 	Model::PostDraw();
 	Sprite::PostDraw();
-	fade_->Draw();
 }

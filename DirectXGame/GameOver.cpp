@@ -59,6 +59,8 @@ void GameOverScene::Update() {
 void GameOverScene::Draw() {
 	DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
+	fade_->Draw();
+
 	Sprite::PreDraw(dxCommon->GetCommandList());
 	sprite_->Draw();
 	Sprite::PostDraw();
@@ -75,5 +77,4 @@ void GameOverScene::Draw() {
 	Sprite::PostDraw();
 
 	
-	fade_->Draw();
 }
