@@ -45,11 +45,11 @@ private:
 	
 	
 
-	static inline const float kAcceleration = 1.0;
+	static inline const float kAcceleration = 0.7;
 
 	static inline const float kAttenuation = 0.5;
 
-	static inline const float kLimitRunSpeed = 0.5;
+	static inline const float kLimitRunSpeed = 0.35;
 
 	static inline const float kTimeTurn = 0.3f;
 
@@ -57,7 +57,7 @@ private:
 
 	static inline const float kLimitFallSpeed = 1.0;
 
-	static inline const float kJumpAcceleration = 1.0f;
+	static inline const float kJumpAcceleration = 0.7f;
 
 	static inline const float kWidth = 0.8f;
 
