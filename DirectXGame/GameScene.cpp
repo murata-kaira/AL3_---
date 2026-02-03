@@ -226,6 +226,14 @@ void GameScene::ChangePhase() {
 			deathParticles_ = new DeathParticles;
 			deathParticles_->Initialize(modelDeathParticles_, &camera_, deathParticlesPosition);
 		}
+
+		// クリア条件：プレイヤーがマップの右端付近（X座標95以上）に到達
+		Vector3 playerPos = player_->GetWorldPosition();
+		if (playerPos.x >= 95.0f) {
+			phase_ = Phase::kClear;
+			isGameClear_ = true;
+		}
+
 		break;
 	case Phase::kFadeIn:
 		if (fade_->IsFinished()) {
@@ -237,6 +245,11 @@ void GameScene::ChangePhase() {
 			phase_ = Phase::kFadeOut;
 			fade_->Start(Fade::Status::FadeOut, 1.0f);
 		}
+		break;
+	case Phase::kClear:
+		// クリアフェーズ：少し待ってからフェードアウト
+		fade_->Start(Fade::Status::FadeOut, 1.0f);
+		phase_ = Phase::kFadeOut;
 		break;
 	case Phase::kFadeOut:
 		if (fade_->IsFinished()) {
